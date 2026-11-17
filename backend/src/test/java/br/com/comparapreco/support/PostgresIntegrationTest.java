@@ -9,7 +9,8 @@ public abstract class PostgresIntegrationTest {
 
     private static final PostgreSQLContainer POSTGRES =
             new PostgreSQLContainer(DockerImageName.parse("postgres:17.7-alpine"))
-                    .withDatabaseName("compara_preco_test");
+                    .withDatabaseName("compara_preco_test")
+                    .withUsername("compara_preco");
 
     static {
         POSTGRES.start();

@@ -16,6 +16,7 @@ spring:
         default_schema: compara_preco
   flyway:
     enabled: true
+    default-schema: compara_preco
   jackson:
     time-zone: America/Sao_Paulo
 

@@ -34,8 +34,14 @@ class ComparaPrecoApplicationTests extends PostgresIntegrationTest {
                 "SELECT count(*) FROM information_schema.schemata WHERE schema_name = 'compara_preco'",
                 Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM public.flyway_schema_history WHERE success = true AND version = '1'",
+                "SELECT count(*) FROM compara_preco.flyway_schema_history WHERE success = true AND version = '1'",
                 Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM compara_preco.flyway_schema_history WHERE success = true AND version = '2'",
+                Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' "
+                        + "AND table_name = 'flyway_schema_history'", Integer.class)).isZero();
     }
 
     @Test

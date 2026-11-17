@@ -107,7 +107,7 @@ Acesse <http://localhost:4200>. O proxy de desenvolvimento encaminha `/api/**` a
 | `SERVER_PORT` | Porta HTTP do backend | `8080` |
 | `API_DOCS_ENABLED` | Disponibiliza OpenAPI e Swagger | `true` |
 
-O banco é exposto apenas em `127.0.0.1`. O volume mantém os dados ao parar os containers. Alterar a senha em `.env` depois da criação do volume não altera a senha do usuário já criado no PostgreSQL. JPA valida a estrutura; somente migrações Flyway alteram o schema. A primeira migração cria o schema `compara_preco`; a segunda cria o catálogo e suas restrições de integridade. Veja as [regras do catálogo](docs/CATALOGO.md).
+O banco é exposto apenas em `127.0.0.1`. O volume mantém os dados ao parar os containers. Alterar a senha em `.env` depois da criação do volume não altera a senha do usuário já criado no PostgreSQL. JPA valida a estrutura; somente migrações Flyway alteram o schema. O histórico Flyway usa explicitamente `compara_preco`, sem depender do `search_path` do usuário PostgreSQL. A primeira migração cria o schema `compara_preco`; a segunda cria o catálogo e suas restrições de integridade. Veja as [regras do catálogo](docs/CATALOGO.md).
 
 ## Validar
 

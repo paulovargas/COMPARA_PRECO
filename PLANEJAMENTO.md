@@ -132,3 +132,11 @@ Etapa 3: implementar cadastro, autenticação, encerramento de sessão, perfis e
 - Empacotamento inicialmente encontrou o JAR bloqueado pela API anterior no Windows. Instância encerrada e verificação final concluída. Execução local passa a usar `spring-boot:run`.
 - README e `docs/CATALOGO.md` documentam estrutura, regras, limitações e perfil demo. A interface pública será conectada ao catálogo nas etapas de busca e comparação.
 - Execução local confirmada após reinício: saúde `UP`, migrações V1 e V2 aplicadas com sucesso no PostgreSQL de desenvolvimento.
+
+## Correção do schema do Flyway — 17/11/2026
+
+- A inspeção local identificou histórico inicial em `public` e histórico com V1/V2 em `compara_preco`, devido à resolução implícita de schema pelo `search_path`.
+- Configuração passa a fixar `spring.flyway.default-schema=compara_preco`, que já contém a V2 aplicada. Os históricos existentes são preservados, sem cópia, exclusão ou renomeação manual.
+- Testes isolados passam a usar o mesmo nome de usuário do banco local e verificam V1/V2 no schema explícito, sem criar um segundo histórico em `public`.
+- A alternativa de mover o histórico foi recusada pela revisão automática e não foi executada. A correção adotada dispensa essa alteração.
+- Regressão validada com `mvnw.cmd -B verify`: 36 testes passaram e pacote gerado. Instalação nova mantém V1/V2 apenas no histórico de `compara_preco`; o histórico local existente contém V1/V2 com sucesso.
