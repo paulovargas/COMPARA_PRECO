@@ -49,6 +49,8 @@ public class Usuario {
         return email == null ? null : email.strip().toLowerCase(Locale.ROOT);
     }
 
+    public void tornarFornecedor() { this.perfil = Perfil.FORNECEDOR; }
+
     public void alterarSituacao(boolean ativo) {
         this.ativo = ativo;
     }

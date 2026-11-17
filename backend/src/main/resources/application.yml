@@ -23,6 +23,8 @@ spring:
       initialize-schema: never
       table-name: compara_preco.spring_session
   jackson:
+    deserialization:
+      accept-float-as-int: false
     time-zone: America/Sao_Paulo
 
 server:

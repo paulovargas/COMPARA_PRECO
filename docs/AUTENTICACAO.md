@@ -16,7 +16,7 @@ A API usa Spring Security com sessão JDBC no PostgreSQL. O navegador recebe ape
 
 Cadastro recebe `nome`, `email` e `senha`. Campos adicionais não atribuem perfil; `perfil=ADMIN` não permite criar um administrador. Login recebe `email` e `senha`. Respostas de usuário contêm `id`, `nome`, `email`, `perfil`, `ativo` e `criadoEm`.
 
-Os perfis são COMPRADOR, FORNECEDOR e ADMIN. Rotas `/api/admin/**` são exclusivas de ADMIN e `/api/fornecedor/**` de FORNECEDOR. As funcionalidades de fornecedor serão adicionadas na etapa 4. Catálogo público e comparação terão suas permissões liberadas junto aos endpoints correspondentes. As demais rotas são negadas por padrão. Saúde e documentação OpenAPI são públicas; `/actuator/info` exige ADMIN.
+Os perfis são COMPRADOR, FORNECEDOR e ADMIN. Rotas `/api/admin/**` são exclusivas de ADMIN e `/api/fornecedor/**` de FORNECEDOR. O cadastro inicial da empresa usa POST `/api/fornecedores`, permitido para comprador e fornecedor. O sucesso altera o perfil e exige novo login. Veja [fornecedores e ofertas](FORNECEDORES_E_OFERTAS.md). Catálogo público e comparação terão suas permissões liberadas junto aos endpoints correspondentes. As demais rotas são negadas por padrão. Saúde e documentação OpenAPI são públicas; `/actuator/info` exige ADMIN.
 
 ## CSRF, sessão e navegador
 

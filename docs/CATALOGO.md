@@ -17,7 +17,7 @@ erDiagram
 - Condições permitidas: `NOVO`, `USADO` e `RECONDICIONADO`.
 - Armazenamento, quando presente, deve ser inteiro positivo. Cor, quando presente, não pode ser vazia.
 - Cor e atributos são normalizados para minúsculas e espaços simples. Acentos são preservados: não há busca aproximada, remoção de acentos ou inferência de sinônimos.
-- Campos ausentes e campos informados são diferentes: armazenamento nulo não equivale a 256 GB. A obrigatoriedade de características por categoria deverá ser definida antes de permitir o cadastro de ofertas para essas categorias.
+- Campos ausentes e campos informados são diferentes: armazenamento nulo não equivale a 256 GB. As flags `exigeArmazenamento`, `exigeCor` e o conjunto `atributosObrigatorios` definem quais características devem estar presentes antes de criar ou aprovar uma oferta. Essas exigências também são conferidas na elegibilidade pública.
 
 Assim, iPhone 16 Pro Max de 256 GB e 512 GB são variantes distintas; novo e usado também. A ordem de chaves no JSONB não muda a identidade da variante.
 
@@ -27,7 +27,7 @@ Mapa textual com até 8 pares. Chaves usam letras ASCII minúsculas, números e 
 
 Valores têm até 64 caracteres e são normalizados. Não é permitido repetir `cor`, `condicao` ou `armazenamento_gb` no mapa, nem informar duas chaves que fiquem iguais após normalização. O JSONB é limitado a 1400 bytes para manter a restrição de unicidade por valor dentro do limite de indexação; o domínio também limita o tamanho da representação normalizada.
 
-A API de cadastro deverá fornecer um contrato tipado e validação por categoria nas etapas seguintes. Esta etapa implementa o domínio e a persistência, sem endpoints públicos de escrita.
+O fornecedor consulta variantes e suas pendências em `/api/fornecedor/catalogo/variantes`. Criar ou aprovar uma oferta exige variante completa. A gestão do catálogo global permanece prevista na etapa 10; o fornecedor não modifica características compartilhadas por outras empresas.
 
 ## Integridade e persistência
 

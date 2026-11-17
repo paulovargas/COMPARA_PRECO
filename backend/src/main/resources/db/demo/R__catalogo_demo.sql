@@ -1,7 +1,7 @@
 -- Exclusivo do perfil demo. IDs estáveis permitem reaplicação sem duplicar dados.
-INSERT INTO compara_preco.categoria (id, nome) VALUES
-('10000000-0000-0000-0000-000000000001', 'Smartphones'),
-('10000000-0000-0000-0000-000000000002', 'Notebooks')
+INSERT INTO compara_preco.categoria (id, nome, exige_armazenamento, exige_cor, atributos_obrigatorios) VALUES
+('10000000-0000-0000-0000-000000000001', 'Smartphones', true, true, '["ram_gb"]'),
+('10000000-0000-0000-0000-000000000002', 'Notebooks', true, true, '["ram_gb","tela_polegadas"]')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO compara_preco.marca (id, nome) VALUES

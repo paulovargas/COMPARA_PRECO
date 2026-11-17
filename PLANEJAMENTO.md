@@ -50,7 +50,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | 1 | Git inicializado, stack verificada, estrutura backend/frontend, configurações de ambiente, banco local e README inicial; aplicações compilam e banco inicia | `chore: prepara estrutura e ambiente de desenvolvimento` | Concluída |
 | 2 | Migrações, catálogo e variantes com restrições de integridade; dados demonstrativos reproduzíveis | `feat: modela catalogo e variantes de produtos` | Concluída |
 | 3 | Cadastro, autenticação, encerramento de sessão, perfis e autorização; testes de acesso indevido e bloqueio | `feat: implementa autenticacao e permissoes` | Concluída |
-| 4 | Cadastro e aprovação de fornecedor, perfil e CRUD de ofertas com isolamento por proprietário | `feat: implementa fornecedores e gerenciamento de ofertas` | Pendente |
+| 4 | Cadastro e aprovação de fornecedor, perfil e CRUD de ofertas com isolamento por proprietário | `feat: implementa fornecedores e gerenciamento de ofertas` | Concluída |
 | 5 | API de busca, filtros, paginação e comparação; testes de equivalência, empates e ofertas inelegíveis | `feat: implementa busca e comparacao de precos` | Pendente |
 | 6 | Interface pública responsiva com categorias, busca, filtros e comparação conectadas à API; estados de carregamento, vazio e erro | `feat: cria experiencia de busca e comparacao` | Pendente |
 | 7 | Autenticação na interface, favoritos, fornecedores seguidos e WhatsApp; persistência por usuário | `feat: adiciona conta favoritos e contato` | Pendente |
@@ -88,7 +88,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 4: cadastrar fornecedores e suas empresas, aprovar/bloquear fornecedores e gerenciar ofertas com isolamento por proprietário e validação de variantes.
+Etapa 5: implementar busca pública, filtros, paginação e comparação por variante, usando a mesma fonte de ofertas elegíveis para preços e contagens.
 
 ## Registro da etapa 1 — 17/11/2026
 
@@ -165,3 +165,29 @@ Etapa 4: cadastrar fornecedores e suas empresas, aprovar/bloquear fornecedores e
 - Documentação em `docs/AUTENTICACAO.md`, exemplos de ambiente e Swagger atualizados, incluindo cabeçalho CSRF e logout tratado por filtro. Pipeline remoto ainda não executado.
 - Frontend não foi alterado nesta etapa; telas de autenticação permanecem na etapa 7.
 - Execução local confirmada: API com saúde UP, V3 aplicada com sucesso, token CSRF emitido sem exibir seu valor e logout presente no OpenAPI. PostgreSQL mantém `restart=no`.
+
+## Execução da etapa 4 — 17/11/2026
+
+- Uma empresa por usuário. Cadastro autenticado por comprador, com razão social, nome fantasia, descrição, WhatsApp com código do país, cidade e UF. Situação inicial PENDENTE. Perfil passa a FORNECEDOR por operação do servidor e exige novo login.
+- Empresa PENDENTE pode editar o perfil; BLOQUEADO tem somente consulta. Ofertas só podem ser cadastradas/alteradas/excluídas por empresa APROVADO com conta ativa.
+- Fluxo administrativo: PENDENTE → APROVADO ou BLOQUEADO; APROVADO → BLOQUEADO; BLOQUEADO → PENDENTE para nova análise. Bloqueio exige motivo. Alterar razão social ou nome fantasia de empresa aprovada exige reaprovação.
+- Oferta vincula fornecedor e variante do catálogo central, com unicidade dessa combinação. Preço decimal positivo, até 2 casas e 10 dígitos inteiros; estoque não negativo; disponibilidade explícita; datas de criação/atualização e versão para concorrência.
+- Criação de oferta começa PENDENTE de moderação. Preço/estoque/disponibilidade podem ser atualizados sem remover aprovação ou bloqueio existentes. Fornecedor não altera empresa, variante ou moderação pelo payload.
+- API administrativa mínima aprova/bloqueia ofertas; desbloqueio retorna a PENDENTE. Excluir é operação do proprietário, com versão atual. Recursos de outro fornecedor retornam 404.
+- Características obrigatórias por categoria passam a ser configuráveis: armazenamento, cor e chaves de atributos. Ofertas e aprovações rejeitam variantes incompletas. Catálogo de variantes pode ser consultado pelo fornecedor; gestão do catálogo global permanece na etapa 10.
+- Uma view de elegibilidade centraliza ofertas aprovadas, disponíveis, com estoque, empresa aprovada, proprietário ativo/FORNECEDOR e variante completa. A etapa 5 usará essa mesma regra para preços e contagens públicos.
+- Transações e bloqueio da empresa coordenam alterações de estado e ofertas; versões impedem sobrescrita de dados desatualizados. DTOs não aceitam escolha de proprietário.
+- Aceite: cadastro/duplicidade/relogin, aprovação/bloqueio/reanálise, perfil e identidade, WhatsApp/UF válidos, isolamento entre proprietários, preço/estoque/versão inválidos, variante inexistente/incompleta, moderação e elegibilidade após bloqueios. Testes em PostgreSQL temporário.
+
+## Validação da etapa 4 — 17/11/2026
+
+- `mvnw.cmd -B verify`: BUILD SUCCESS, 78 testes, nenhuma falha, erro ou teste ignorado; 22 cenários novos de fornecedores/ofertas e 56 cenários anteriores.
+- Cadastro vinculado ao usuário autenticado, perfil definido pelo servidor, invalidação das sessões e novo login, duplicidade e validação de WhatsApp/UF verificados por HTTP real.
+- Aprovação, bloqueio com motivo, reanálise, reaprovação por mudança de identidade e controle de versões validados.
+- CRUD de oferta testa isolamento entre duas empresas, tentativa de injetar outro proprietário/moderação/variante, exclusão, duplicata e versão desatualizada.
+- Preço e estoque inválidos, estoque/versão fracionários e motivos com caractere nulo são rejeitados. Restrições de preço e unicidade foram testadas também por SQL direto.
+- Criação recusa variante inexistente ou incompleta; catálogo informa pendências de armazenamento, cor e atributos exigidos.
+- Moderação é preservada ao editar preço/estoque. A view de elegibilidade foi testada após bloqueio de empresa/conta, troca de perfil, falta de estoque, indisponibilidade, moderação pendente e mudança dos requisitos da categoria; preços elegíveis são ordenados.
+- Documentação em `docs/FORNECEDORES_E_OFERTAS.md`, README e regras do catálogo atualizadas. Interface do fornecedor permanece na etapa 8 e administração completa na etapa 10.
+- O fluxo para o fornecedor solicitar inclusão de produto/variante ausente deve ser detalhado com o painel e a gestão do catálogo (etapas 8/10); o CRUD atual de ofertas seleciona variantes existentes do catálogo central.
+- Execução local confirmada: saúde UP, V4 aplicada, view de elegibilidade consultável e endpoints de cadastro/ofertas no OpenAPI. PostgreSQL preserva `restart=no`.
