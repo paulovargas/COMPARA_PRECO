@@ -4,7 +4,7 @@
 
 Conectar compradores a fornecedores por meio de busca, comparação de ofertas equivalentes e contato pelo WhatsApp, conforme `descricao.md`.
 
-O projeto partiu apenas da descrição. O Git foi inicializado e o planejamento foi registrado no commit `00b4a30`; a estrutura técnica inicial está implementada e validada. Este documento orienta as entregas e deve ser atualizado a cada etapa.
+O projeto partiu apenas da descrição. O Git foi inicializado e o planejamento foi registrado no commit `00b4a30`; a estrutura técnica e o domínio persistente do catálogo estão implementados e validados. Este documento orienta as entregas e deve ser atualizado a cada etapa.
 
 ## Direção técnica proposta
 
@@ -48,7 +48,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | --- | --- | --- | --- |
 | 0 | Planejamento registrado, escopo e decisões iniciais explícitos | `docs: registra planejamento do projeto` | Concluída (`00b4a30`) |
 | 1 | Git inicializado, stack verificada, estrutura backend/frontend, configurações de ambiente, banco local e README inicial; aplicações compilam e banco inicia | `chore: prepara estrutura e ambiente de desenvolvimento` | Concluída |
-| 2 | Migrações, catálogo e variantes com restrições de integridade; dados demonstrativos reproduzíveis | `feat: modela catalogo e variantes de produtos` | Pendente |
+| 2 | Migrações, catálogo e variantes com restrições de integridade; dados demonstrativos reproduzíveis | `feat: modela catalogo e variantes de produtos` | Concluída |
 | 3 | Cadastro, autenticação, encerramento de sessão, perfis e autorização; testes de acesso indevido e bloqueio | `feat: implementa autenticacao e permissoes` | Pendente |
 | 4 | Cadastro e aprovação de fornecedor, perfil e CRUD de ofertas com isolamento por proprietário | `feat: implementa fornecedores e gerenciamento de ofertas` | Pendente |
 | 5 | API de busca, filtros, paginação e comparação; testes de equivalência, empates e ofertas inelegíveis | `feat: implementa busca e comparacao de precos` | Pendente |
@@ -88,7 +88,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 2: modelar categorias, marcas, produtos e variantes; criar migrações e restrições de integridade; preparar dados demonstrativos e testes de persistência.
+Etapa 3: implementar cadastro, autenticação, encerramento de sessão, perfis e autorização, com testes de acesso indevido e bloqueio.
 
 ## Registro da etapa 1 — 17/11/2026
 
@@ -111,3 +111,24 @@ Etapa 2: modelar categorias, marcas, produtos e variantes; criar migrações e r
 - Compose configurado com `restart: "no"`; política aplicada também ao PostgreSQL existente via `docker update --restart=no`. A alteração preserva a execução atual e os dados.
 - Para futuros serviços adicionados ao Compose, manter a política de inicialização manual.
 - Validação: configuração Compose e inspeção da política do container existente.
+
+## Execução da etapa 2 — 17/11/2026
+
+- Catálogo organizado por funcionalidade, com entidades e repositories de categoria, marca, produto e variante.
+- Produto único por marca e modelo normalizado; a variante distingue armazenamento opcional, cor opcional, condição e atributos adicionais normalizados em JSONB. Campos ausentes participam da unicidade, evitando duplicidades também com valores nulos.
+- Atributos adicionais são pares textuais explícitos e limitados em tamanho. Campos centrais não podem ser repetidos no mapa. A definição de atributos obrigatórios por categoria será detalhada antes dos cadastros administrativos.
+- Testes com Testcontainers criam um PostgreSQL temporário, sem modificar o banco local da aplicação. Esses containers são iniciados pelo comando de teste e removidos após sua execução, sem reinício automático.
+- Dados demonstrativos em localização Flyway separada, habilitada somente pelo perfil `demo`.
+- Aceite: migração validada pelo Hibernate, persistência dos relacionamentos e JSONB, rejeição de duplicatas normalizadas e dados inválidos, distinção entre variantes e carga demo idempotente.
+
+## Validação da etapa 2 — 17/11/2026
+
+- `mvnw.cmd -B verify`: BUILD SUCCESS, 36 testes, nenhuma falha, erro ou teste ignorado.
+- Domínio: normalização de espaços e maiúsculas, armazenamento válido, chaves de atributos, limites de tamanho, imutabilidade dos atributos e URL de imagem.
+- Persistência: relacionamentos, JSONB, duplicatas de categorias/marcas/modelos/variantes, nulos na identidade, diferenças entre produtos e características, integridade referencial e rejeição de dados inválidos por SQL direto.
+- Carga demo: 2 categorias, 2 marcas, 3 produtos e 6 variantes, reaplicada duas vezes sem duplicação dentro de teste transacional. Perfil padrão sem registros demo.
+- Testcontainers inicia um PostgreSQL descartável e remove seus containers ao término. O banco local não foi usado para testes.
+- Pipeline atualizado para usar o isolamento dos testes, sem serviço PostgreSQL fixo. Execução remota continua pendente de envio ao GitHub.
+- Empacotamento inicialmente encontrou o JAR bloqueado pela API anterior no Windows. Instância encerrada e verificação final concluída. Execução local passa a usar `spring-boot:run`.
+- README e `docs/CATALOGO.md` documentam estrutura, regras, limitações e perfil demo. A interface pública será conectada ao catálogo nas etapas de busca e comparação.
+- Execução local confirmada após reinício: saúde `UP`, migrações V1 e V2 aplicadas com sucesso no PostgreSQL de desenvolvimento.

@@ -4,7 +4,7 @@ Plataforma para buscar produtos, comparar ofertas equivalentes e entrar em conta
 
 ## Entrega atual
 
-Base de desenvolvimento: API Spring Boot, PostgreSQL com primeira migração Flyway, OpenAPI, frontend Angular com página de apresentação responsiva e pipeline de validação. Busca, contas, comparação e painéis serão implementados nas próximas etapas; a página inicial informa que o serviço está em preparação.
+Base de desenvolvimento e modelo do catálogo: API Spring Boot, PostgreSQL com migrações Flyway, entidades e repositories de categorias, marcas, produtos e variantes, OpenAPI, frontend Angular com página de apresentação responsiva e pipeline de validação. Busca, contas, comparação e painéis serão implementados nas próximas etapas; a página inicial informa que o serviço está em preparação.
 
 ## Stack
 
@@ -107,18 +107,20 @@ Acesse <http://localhost:4200>. O proxy de desenvolvimento encaminha `/api/**` a
 | `SERVER_PORT` | Porta HTTP do backend | `8080` |
 | `API_DOCS_ENABLED` | Disponibiliza OpenAPI e Swagger | `true` |
 
-O banco é exposto apenas em `127.0.0.1`. O volume mantém os dados ao parar os containers. Alterar a senha em `.env` depois da criação do volume não altera a senha do usuário já criado no PostgreSQL. JPA valida a estrutura; somente migrações Flyway alteram o schema. A primeira migração cria o schema `compara_preco`, reservado às tabelas de negócio.
+O banco é exposto apenas em `127.0.0.1`. O volume mantém os dados ao parar os containers. Alterar a senha em `.env` depois da criação do volume não altera a senha do usuário já criado no PostgreSQL. JPA valida a estrutura; somente migrações Flyway alteram o schema. A primeira migração cria o schema `compara_preco`; a segunda cria o catálogo e suas restrições de integridade. Veja as [regras do catálogo](docs/CATALOGO.md).
 
 ## Validar
 
-Com PostgreSQL iniciado e configuração local disponível:
+Com o Docker Desktop iniciado (não é necessário iniciar o banco do Compose para os testes):
 
 ```powershell
 Set-Location backend
 .\mvnw.cmd -B verify
 ```
 
-Os testes iniciam a API em porta aleatória e verificam saúde HTTP, conectividade PostgreSQL, migração aplicada e contrato OpenAPI. Usam o banco configurado; nesta etapa, fazem apenas consultas após a migração. Não use credenciais de produção para testes.
+No Windows, encerre antes de empacotar uma instância iniciada com `java -jar` que use o JAR de `target`, pois ela pode bloquear o arquivo. Prefira `spring-boot:run` para desenvolver.
+
+Os testes de integração usam Testcontainers para criar um PostgreSQL temporário em uma porta dinâmica, com banco e credenciais isolados. Não utilizam o banco do Compose nem as credenciais de `DB_*`. Verificam saúde HTTP, migrações, OpenAPI, persistência, restrições de integridade e carga demo. Os testes de domínio verificam normalização e validação das variantes. Os containers temporários são removidos ao encerrar os testes e não têm reinício automático. O primeiro teste pode baixar imagens Docker e dependências Maven.
 
 Em outro terminal, a partir da raiz:
 
@@ -129,7 +131,17 @@ npm.cmd run format:check
 npm.cmd run build
 ```
 
-Ainda não há testes de comportamento do frontend: serão adicionados junto aos fluxos funcionais. O pipeline executa os testes do backend com PostgreSQL isolado e verifica formatação e build do frontend. O pipeline será executado no GitHub quando houver um remoto configurado e os commits forem enviados.
+Ainda não há testes de comportamento do frontend: serão adicionados junto aos fluxos funcionais. O pipeline executa os testes do backend com PostgreSQL isolado via Testcontainers e verifica formatação e build do frontend. O pipeline será executado no GitHub quando houver um remoto configurado e os commits forem enviados.
+
+## Dados de demonstração
+
+A carga demo fica separada das migrações de estrutura. Em um banco de desenvolvimento dedicado, inicie a API com o perfil explícito, a partir de `backend`:
+
+```powershell
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=demo"
+```
+
+Ela cria 2 categorias, 2 marcas, 3 produtos e 6 variantes com IDs estáveis. Ainda não há preços ou fornecedores nesta etapa. A API com perfil padrão aplica somente a estrutura. Desativar o perfil `demo` não apaga dados já carregados; mantenha um banco exclusivo para demonstração. O script pode ser reaplicado sem duplicar registros e não sobrescreve alterações em registros existentes.
 
 ## Encerrar
 
@@ -141,4 +153,4 @@ docker compose stop
 
 ## Próxima entrega
 
-Modelar categorias, marcas, produtos e variantes, criar migrações e restrições de integridade e preparar dados demonstrativos, conforme etapa 2 do planejamento. Publicação em servidor ainda depende da definição do destino e dos acessos.
+Implementar cadastro, autenticação, encerramento de sessão, perfis e autorização, conforme etapa 3 do planejamento. Publicação em servidor ainda depende da definição do destino e dos acessos.

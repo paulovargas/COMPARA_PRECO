@@ -10,21 +10,6 @@ permissions:
 jobs:
   backend:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17.7-alpine
-        env:
-          POSTGRES_DB: compara_preco
-          POSTGRES_USER: compara_preco
-          POSTGRES_PASSWORD: senha-exclusiva-ci
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U compara_preco -d compara_preco"
-          --health-interval=5s --health-timeout=5s --health-retries=12
-    env:
-      DB_URL: jdbc:postgresql://localhost:5432/compara_preco
-      DB_PASSWORD: senha-exclusiva-ci
     defaults:
       run:
         working-directory: backend

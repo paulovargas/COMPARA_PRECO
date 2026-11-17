@@ -1,5 +1,6 @@
 package br.com.comparapreco;
 
+import br.com.comparapreco.support.PostgresIntegrationTest;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -15,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class ComparaPrecoApplicationTests {
+class ComparaPrecoApplicationTests extends PostgresIntegrationTest {
 
     @Value("${local.server.port}")
     private int port;
