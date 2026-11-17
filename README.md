@@ -63,6 +63,8 @@ Se `docker compose` não estiver disponível no PATH, use o executável instalad
 & 'C:\Program Files\Docker\Docker\resources\bin\docker-compose.exe' up -d --wait postgres
 ```
 
+Os containers deste projeto usam `restart: "no"`: abrir ou reiniciar o Docker Desktop não inicia o banco automaticamente. Para subir manualmente, execute `docker compose up -d --wait postgres` na raiz ou use o botão de iniciar no Docker Desktop. A configuração também se aplica quando o container for recriado.
+
 ### 2. Backend
 
 Após selecionar o JDK, abra um terminal na pasta `backend`:

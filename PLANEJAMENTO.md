@@ -104,3 +104,10 @@ Etapa 2: modelar categorias, marcas, produtos e variantes; criar migrações e r
 - Frontend: `npm.cmd run format:check` e `npm.cmd run build` passaram. Bundle inicial de aproximadamente 205 kB, sem alertas de orçamento. Ainda não há testes de comportamento da interface; eles acompanharão as funcionalidades.
 - Compose: configuração válida e PostgreSQL saudável. Nenhuma alteração em Java ou npm globais foi necessária.
 - Arquivos revisados com `git diff --cached --check`; credenciais locais e artefatos de build ficam fora do versionamento.
+
+## Ajuste de execução local — 17/11/2026
+
+- Por solicitação de Paulo, os containers do projeto devem iniciar somente por ação manual, sem subir automaticamente ao abrir o Docker Desktop.
+- Compose configurado com `restart: "no"`; política aplicada também ao PostgreSQL existente via `docker update --restart=no`. A alteração preserva a execução atual e os dados.
+- Para futuros serviços adicionados ao Compose, manter a política de inicialização manual.
+- Validação: configuração Compose e inspeção da política do container existente.
