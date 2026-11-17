@@ -4,7 +4,7 @@
 
 Conectar compradores a fornecedores por meio de busca, comparação de ofertas equivalentes e contato pelo WhatsApp, conforme `descricao.md`.
 
-O repositório contém apenas a descrição. Nenhuma implementação foi iniciada e o diretório ainda não possui Git. Este documento orienta as entregas e deve ser atualizado a cada etapa.
+O projeto partiu apenas da descrição. O Git foi inicializado e o planejamento foi registrado no commit `00b4a30`; a estrutura técnica inicial está implementada e validada. Este documento orienta as entregas e deve ser atualizado a cada etapa.
 
 ## Direção técnica proposta
 
@@ -14,9 +14,9 @@ O repositório contém apenas a descrição. Nenhuma implementação foi iniciad
 - Execução local: Docker Compose para banco e, posteriormente, aplicação; configuração por ambiente e exemplos sem credenciais reais.
 - Documentação: README em português e OpenAPI para a API.
 
-Esta proposta substitui a sugestão preliminar de Python/SQLite e aproxima o projeto das convenções de Paulo para aplicações full stack. As versões e dependências serão verificadas e fixadas na preparação técnica, antes da geração dos projetos.
+Esta proposta substitui a sugestão preliminar de Python/SQLite e aproxima o projeto das convenções de Paulo para aplicações full stack. Versões fixadas na preparação: Java 25, Spring Boot 4.1.2, Maven Wrapper 3.10.1, Angular/CLI 21.2.26, PostgreSQL 17.7 e Springdoc 3.2.0. O lockfile do frontend registra as dependências resolvidas.
 
-Ambiente observado: Java 11, Maven 3.8.8, Node 22.15.1, Python 3.13.15 e cliente Docker instalado. Precisamos verificar disponibilidade de JDK compatível com a versão escolhida de Spring Boot e funcionamento do Docker. No PowerShell, usar `npm.cmd` para evitar o bloqueio de `npm.ps1`, sem alterar a política do sistema.
+Ambiente observado: Java 11, Maven 3.8.8, Node 22.15.1, Python 3.13.15 e cliente Docker instalado. Foi encontrado e utilizado o JDK 25 já instalado; Docker Desktop e Compose foram validados com PostgreSQL saudável. No PowerShell, usar `npm.cmd` para evitar o bloqueio de `npm.ps1`, sem alterar a política do sistema.
 
 ## Escopo funcional
 
@@ -46,8 +46,8 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 
 | Etapa | Entrega e critério de aceite | Commit previsto | Estado |
 | --- | --- | --- | --- |
-| 0 | Planejamento registrado, escopo e decisões iniciais explícitos | `docs: registra planejamento do projeto` | Documento criado |
-| 1 | Git inicializado, stack verificada, estrutura backend/frontend, configurações de ambiente, banco local e README inicial; aplicações compilam e banco inicia | `chore: prepara estrutura e ambiente de desenvolvimento` | Pendente |
+| 0 | Planejamento registrado, escopo e decisões iniciais explícitos | `docs: registra planejamento do projeto` | Concluída (`00b4a30`) |
+| 1 | Git inicializado, stack verificada, estrutura backend/frontend, configurações de ambiente, banco local e README inicial; aplicações compilam e banco inicia | `chore: prepara estrutura e ambiente de desenvolvimento` | Concluída |
 | 2 | Migrações, catálogo e variantes com restrições de integridade; dados demonstrativos reproduzíveis | `feat: modela catalogo e variantes de produtos` | Pendente |
 | 3 | Cadastro, autenticação, encerramento de sessão, perfis e autorização; testes de acesso indevido e bloqueio | `feat: implementa autenticacao e permissoes` | Pendente |
 | 4 | Cadastro e aprovação de fornecedor, perfil e CRUD de ofertas com isolamento por proprietário | `feat: implementa fornecedores e gerenciamento de ofertas` | Pendente |
@@ -80,7 +80,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Decisões e dependências em aberto
 
-- Confirmar versões da stack e ferramentas compatíveis na etapa 1.
+- Stack verificada: usar o JDK 25 já instalado, selecionado por terminal; Angular 21 é compatível com Node 22.15.1. Não alterar as ferramentas globais da máquina.
 - Detalhar atributos de categorias além de smartphones ao implementar variantes.
 - Definir regras de prazo de atualização das ofertas e tratamento de ofertas antigas antes da liberação em produção.
 - Definir métricas, formatos de relatórios e configurações administrativas durante o detalhamento do painel.
@@ -88,4 +88,19 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 1: verificar e fixar a stack, preparar Git e a estrutura de desenvolvimento, documentar a execução e validar a base antes de implementar regras de negócio.
+Etapa 2: modelar categorias, marcas, produtos e variantes; criar migrações e restrições de integridade; preparar dados demonstrativos e testes de persistência.
+
+## Registro da etapa 1 — 17/11/2026
+
+- Git inicializado em `main`; primeiro commit contém o planejamento e as convenções de arquivos.
+- Backend gerado pelo Spring Initializr oficial; frontend gerado pelo Angular CLI.
+- PostgreSQL iniciado com Docker Compose, dados persistentes e verificação de saúde. A porta 5432 foi recusada pelo Windows; usamos `127.0.0.1:15432`.
+- Primeira migração cria o schema da aplicação; tabelas de catálogo ficam para a etapa 2.
+- `.env` local criado com senha aleatória e ignorado pelo Git. Backend lê esse arquivo ou variáveis externas.
+- Página de apresentação informa que a plataforma está em preparação; ainda não há busca ou ofertas simuladas.
+- README e pipeline preparados. O pipeline remoto ainda não foi executado.
+- Backend: `mvnw.cmd -B verify` passou após os ajustes finais, com 2 testes, nenhuma falha e nenhum teste ignorado. A API também respondeu em execução normal: saúde `UP` e OpenAPI 3.1.0 com título da aplicação.
+- Instalação inicial do frontend encontrou erro interno `edgesOut` no npm 11.5.1. O lockfile foi gerado com npm 11.21.2 executado localmente. Depois, `npm.cmd ci --no-fund --no-audit` passou também com o npm instalado, confirmando reprodução pelo lockfile.
+- Frontend: `npm.cmd run format:check` e `npm.cmd run build` passaram. Bundle inicial de aproximadamente 205 kB, sem alertas de orçamento. Ainda não há testes de comportamento da interface; eles acompanharão as funcionalidades.
+- Compose: configuração válida e PostgreSQL saudável. Nenhuma alteração em Java ou npm globais foi necessária.
+- Arquivos revisados com `git diff --cached --check`; credenciais locais e artefatos de build ficam fora do versionamento.
