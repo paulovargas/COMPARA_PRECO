@@ -49,7 +49,7 @@ class ComparaPrecoApplicationTests extends PostgresIntegrationTest {
         var response = consultar("/v3/api-docs");
 
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("\"openapi\"");
+        assertThat(response.body()).contains("\"openapi\"", "/api/auth/logout", "X-CSRF-TOKEN");
     }
 
     private HttpResponse<String> consultar(String path) throws Exception {

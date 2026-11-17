@@ -49,7 +49,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | 0 | Planejamento registrado, escopo e decisões iniciais explícitos | `docs: registra planejamento do projeto` | Concluída (`00b4a30`) |
 | 1 | Git inicializado, stack verificada, estrutura backend/frontend, configurações de ambiente, banco local e README inicial; aplicações compilam e banco inicia | `chore: prepara estrutura e ambiente de desenvolvimento` | Concluída |
 | 2 | Migrações, catálogo e variantes com restrições de integridade; dados demonstrativos reproduzíveis | `feat: modela catalogo e variantes de produtos` | Concluída |
-| 3 | Cadastro, autenticação, encerramento de sessão, perfis e autorização; testes de acesso indevido e bloqueio | `feat: implementa autenticacao e permissoes` | Pendente |
+| 3 | Cadastro, autenticação, encerramento de sessão, perfis e autorização; testes de acesso indevido e bloqueio | `feat: implementa autenticacao e permissoes` | Concluída |
 | 4 | Cadastro e aprovação de fornecedor, perfil e CRUD de ofertas com isolamento por proprietário | `feat: implementa fornecedores e gerenciamento de ofertas` | Pendente |
 | 5 | API de busca, filtros, paginação e comparação; testes de equivalência, empates e ofertas inelegíveis | `feat: implementa busca e comparacao de precos` | Pendente |
 | 6 | Interface pública responsiva com categorias, busca, filtros e comparação conectadas à API; estados de carregamento, vazio e erro | `feat: cria experiencia de busca e comparacao` | Pendente |
@@ -88,7 +88,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 3: implementar cadastro, autenticação, encerramento de sessão, perfis e autorização, com testes de acesso indevido e bloqueio.
+Etapa 4: cadastrar fornecedores e suas empresas, aprovar/bloquear fornecedores e gerenciar ofertas com isolamento por proprietário e validação de variantes.
 
 ## Registro da etapa 1 — 17/11/2026
 
@@ -140,3 +140,28 @@ Etapa 3: implementar cadastro, autenticação, encerramento de sessão, perfis e
 - Testes isolados passam a usar o mesmo nome de usuário do banco local e verificam V1/V2 no schema explícito, sem criar um segundo histórico em `public`.
 - A alternativa de mover o histórico foi recusada pela revisão automática e não foi executada. A correção adotada dispensa essa alteração.
 - Regressão validada com `mvnw.cmd -B verify`: 36 testes passaram e pacote gerado. Instalação nova mantém V1/V2 apenas no histórico de `compara_preco`; o histórico local existente contém V1/V2 com sucesso.
+
+## Execução da etapa 3 — 17/11/2026
+
+- Autenticação de API com Spring Security e sessões JDBC persistidas no PostgreSQL. Cookie `SESSION` HttpOnly, SameSite=Lax, expiração por inatividade de 30 minutos e flag Secure configurável para HTTPS.
+- CSRF por sessão: obter token em `GET /api/auth/csrf`, enviar o cabeçalho informado nos POST/PATCH e renovar o token após login/logout. Login rotaciona o identificador da sessão e o token CSRF.
+- Endpoints: cadastro público de comprador, login JSON, logout e usuário atual. Perfis COMPRADOR/FORNECEDOR/ADMIN; o cadastro público não aceita escolha de perfil.
+- Administração inicial por configuração explícita de ambiente, sem senha padrão. API administrativa mínima para consultar usuários e bloquear/desbloquear contas; proibido bloquear a própria conta. Gestão completa de permissões permanece na etapa 10.
+- Autorizações por rota e método. Sessões guardam apenas identidade, sem senha/hash, e conferem estado e perfil no banco a cada requisição. Bloqueio invalida sessões persistidas e impede reaproveitamento.
+- Limites persistidos e atômicos: login por IP e email em janela de 10 minutos; cadastro por IP em janela de 1 hora. Chaves armazenadas como SHA-256 e limpeza periódica de registros antigos.
+- Senhas de 12 a 64 caracteres, até 72 bytes UTF-8, com BCrypt fator 12 e identificador de algoritmo para evolução. DTOs de credenciais não expõem conteúdo em toString.
+- Contratos tipados e erros JSON para validação, credenciais inválidas, acesso indevido, conflitos e limite de tentativas. Interface de autenticação segue prevista na etapa 7.
+- Aceite: cadastro válido/duplicado/inválido, não elevação de perfil, hash e segredo não expostos, login inválido/bloqueado, rotação de sessão/CSRF, logout, expiração, persistência de sessão, acesso por perfil e bloqueio de sessão já aberta. Testes em PostgreSQL temporário.
+
+## Validação da etapa 3 — 17/11/2026
+
+- `mvnw.cmd -B verify`: BUILD SUCCESS, 56 testes, sem falhas, erros ou testes ignorados. São 20 cenários HTTP/serviço de autenticação e os 36 testes anteriores.
+- Cadastro normalizado, email duplicado, campos inválidos, limite UTF-8 da senha, hash BCrypt e não elevação de perfil verificados. Hash oculto também na serialização direta da entidade.
+- CSRF obrigatório e vinculado à sessão; login rotaciona sessão/token; cookie HttpOnly/SameSite; contexto JDBC persiste apenas identidade e credenciais nulas.
+- Logout, rejeição de cookie antigo, expiração no servidor e acesso administrativo por perfil verificados com HTTP real.
+- Bloqueio de conta remove sessões; leitura de estado/perfil a cada requisição revoga acesso mesmo quando o banco é alterado fora do serviço de bloqueio. Desbloqueio exige novo login.
+- Limites de cadastro/login, renovação de janela e concorrência por email validados; contadores confirmados antes de responder 429.
+- Bootstrap administrativo idempotente e rejeição de promoção implícita de comprador verificados. Nenhuma conta administrativa é criada por padrão.
+- Documentação em `docs/AUTENTICACAO.md`, exemplos de ambiente e Swagger atualizados, incluindo cabeçalho CSRF e logout tratado por filtro. Pipeline remoto ainda não executado.
+- Frontend não foi alterado nesta etapa; telas de autenticação permanecem na etapa 7.
+- Execução local confirmada: API com saúde UP, V3 aplicada com sucesso, token CSRF emitido sem exibir seu valor e logout presente no OpenAPI. PostgreSQL mantém `restart=no`.

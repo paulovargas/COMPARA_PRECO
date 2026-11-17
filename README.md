@@ -4,7 +4,7 @@ Plataforma para buscar produtos, comparar ofertas equivalentes e entrar em conta
 
 ## Entrega atual
 
-Base de desenvolvimento e modelo do catálogo: API Spring Boot, PostgreSQL com migrações Flyway, entidades e repositories de categorias, marcas, produtos e variantes, OpenAPI, frontend Angular com página de apresentação responsiva e pipeline de validação. Busca, contas, comparação e painéis serão implementados nas próximas etapas; a página inicial informa que o serviço está em preparação.
+Base de desenvolvimento e modelo do catálogo: API Spring Boot, PostgreSQL com migrações Flyway, entidades e repositories de categorias, marcas, produtos e variantes, OpenAPI, frontend Angular com página de apresentação responsiva e pipeline de validação. Cadastro, login, sessões e permissões já estão disponíveis na API. Busca, comparação, painéis e telas de conta serão implementados nas próximas etapas; a página inicial informa que o serviço está em preparação.
 
 ## Stack
 
@@ -12,7 +12,7 @@ Base de desenvolvimento e modelo do catálogo: API Spring Boot, PostgreSQL com m
 - Maven Wrapper 3.10.1: não é necessário instalar Maven globalmente.
 - Angular e Angular CLI 21.2.26, TypeScript 5.9 e Node 22.15.1.
 - PostgreSQL 17.7 em Docker, Spring Data JPA e Flyway.
-- Springdoc OpenAPI 3.2.0.
+- Springdoc OpenAPI 3.2.0, Spring Security e Spring Session JDBC.
 
 Versões conferidas nas fontes oficiais: [requisitos do Spring Boot](https://docs.spring.io/spring-boot/system-requirements.html), [compatibilidade do Angular](https://angular.dev/reference/versions) e [compatibilidade do Springdoc](https://springdoc.org/#what-is-the-compatibility-matrix-of-springdoc-openapi-with-spring-boot). O Node instalado é compatível com Angular 21; Angular 22 exige uma versão superior do Node. O lockfile fixa as dependências do frontend. Para atualizar dependências, a versão de npm usada na preparação foi 11.21.2, executada via `npm.cmd exec --yes --package=npm@11.21.2 -- npm install`, sem instalação global.
 
@@ -76,10 +76,11 @@ Set-Location backend
 
 A aplicação lê o `.env` da pasta pai. Variáveis de ambiente têm precedência. Em ambientes externos, configure `DB_URL`, `DB_USERNAME` e `DB_PASSWORD`; não é preciso distribuir o arquivo `.env`.
 
-- API: <http://localhost:8080> (ainda não há endpoints de negócio na etapa 1).
+- API: <http://localhost:8080> (endpoints de autenticação e administração de usuários).
 - Saúde da aplicação e do banco: <http://localhost:8080/actuator/health>.
 - Swagger UI: <http://localhost:8080/swagger-ui.html>.
 - Contrato OpenAPI: <http://localhost:8080/v3/api-docs>.
+- [Autenticação, CSRF, endpoints e primeiro administrador](docs/AUTENTICACAO.md).
 
 ### 3. Frontend
 
@@ -105,9 +106,14 @@ Acesse <http://localhost:4200>. O proxy de desenvolvimento encaminha `/api/**` a
 | `DB_USERNAME` | Usuário JDBC | `POSTGRES_USER` |
 | `DB_PASSWORD` | Senha JDBC | `POSTGRES_PASSWORD` |
 | `SERVER_PORT` | Porta HTTP do backend | `8080` |
+| `SESSION_COOKIE_SECURE` | Cookie de sessão somente em HTTPS | `false` local; use `true` em produção |
+| `APP_ADMIN_HABILITADO` | Habilita criação do primeiro administrador | `false` |
+| `APP_ADMIN_NOME` | Nome do primeiro administrador | `Administrador` |
+| `APP_ADMIN_EMAIL` | Email do primeiro administrador | Obrigatório se habilitado |
+| `APP_ADMIN_SENHA` | Senha inicial, via ambiente | Obrigatória se habilitado |
 | `API_DOCS_ENABLED` | Disponibiliza OpenAPI e Swagger | `true` |
 
-O banco é exposto apenas em `127.0.0.1`. O volume mantém os dados ao parar os containers. Alterar a senha em `.env` depois da criação do volume não altera a senha do usuário já criado no PostgreSQL. JPA valida a estrutura; somente migrações Flyway alteram o schema. O histórico Flyway usa explicitamente `compara_preco`, sem depender do `search_path` do usuário PostgreSQL. A primeira migração cria o schema `compara_preco`; a segunda cria o catálogo e suas restrições de integridade. Veja as [regras do catálogo](docs/CATALOGO.md).
+O banco é exposto apenas em `127.0.0.1`. O volume mantém os dados ao parar os containers. Alterar a senha em `.env` depois da criação do volume não altera a senha do usuário já criado no PostgreSQL. JPA valida a estrutura; somente migrações Flyway alteram o schema. O histórico Flyway usa explicitamente `compara_preco`, sem depender do `search_path` do usuário PostgreSQL. A primeira migração cria o schema `compara_preco`; a segunda cria o catálogo e suas restrições de integridade; a terceira cria usuários, sessões JDBC e contadores de acesso. Veja as [regras do catálogo](docs/CATALOGO.md).
 
 ## Validar
 
@@ -153,4 +159,4 @@ docker compose stop
 
 ## Próxima entrega
 
-Implementar cadastro, autenticação, encerramento de sessão, perfis e autorização, conforme etapa 3 do planejamento. Publicação em servidor ainda depende da definição do destino e dos acessos.
+Implementar cadastro e aprovação de fornecedores, perfil da empresa e gerenciamento de ofertas com isolamento por proprietário, conforme etapa 4 do planejamento. Publicação em servidor ainda depende da definição do destino e dos acessos.
