@@ -51,7 +51,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | 2 | Migrações, catálogo e variantes com restrições de integridade; dados demonstrativos reproduzíveis | `feat: modela catalogo e variantes de produtos` | Concluída |
 | 3 | Cadastro, autenticação, encerramento de sessão, perfis e autorização; testes de acesso indevido e bloqueio | `feat: implementa autenticacao e permissoes` | Concluída |
 | 4 | Cadastro e aprovação de fornecedor, perfil e CRUD de ofertas com isolamento por proprietário | `feat: implementa fornecedores e gerenciamento de ofertas` | Concluída |
-| 5 | API de busca, filtros, paginação e comparação; testes de equivalência, empates e ofertas inelegíveis | `feat: implementa busca e comparacao de precos` | Pendente |
+| 5 | API de busca, filtros, paginação e comparação; testes de equivalência, empates e ofertas inelegíveis | `feat: implementa busca e comparacao de precos` | Concluída |
 | 6 | Interface pública responsiva com categorias, busca, filtros e comparação conectadas à API; estados de carregamento, vazio e erro | `feat: cria experiencia de busca e comparacao` | Pendente |
 | 7 | Autenticação na interface, favoritos, fornecedores seguidos e WhatsApp; persistência por usuário | `feat: adiciona conta favoritos e contato` | Pendente |
 | 8 | Painel do fornecedor para empresa, catálogo, preços, estoque e disponibilidade | `feat: cria painel do fornecedor` | Pendente |
@@ -88,7 +88,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 5: implementar busca pública, filtros, paginação e comparação por variante, usando a mesma fonte de ofertas elegíveis para preços e contagens.
+Etapa 6: conectar a interface Angular à busca pública e à comparação, com filtros, paginação, layout responsivo e estados de carregamento, vazio e erro.
 
 ## Registro da etapa 1 — 17/11/2026
 
@@ -191,3 +191,24 @@ Etapa 5: implementar busca pública, filtros, paginação e comparação por var
 - Documentação em `docs/FORNECEDORES_E_OFERTAS.md`, README e regras do catálogo atualizadas. Interface do fornecedor permanece na etapa 8 e administração completa na etapa 10.
 - O fluxo para o fornecedor solicitar inclusão de produto/variante ausente deve ser detalhado com o painel e a gestão do catálogo (etapas 8/10); o CRUD atual de ofertas seleciona variantes existentes do catálogo central.
 - Execução local confirmada: saúde UP, V4 aplicada, view de elegibilidade consultável e endpoints de cadastro/ofertas no OpenAPI. PostgreSQL preserva `restart=no`.
+
+## Execução da etapa 5 — 18/11/2026
+
+- Criar GET públicos `/api/catalogo/variantes`, `/api/catalogo/variantes/{id}/ofertas`, `/api/catalogo/categorias` e `/api/catalogo/marcas`.
+- Buscar por nome, marca e modelo com texto literal; filtrar categoria, marca, modelo, armazenamento, cor, condição, fornecedor, estado e cidade. Paginação limitada a 50 itens, ordenação por menor preço e UUID para desempate estável.
+- Agregar preço mínimo e quantidade diretamente da view de elegibilidade, aplicando os mesmos filtros na comparação. Variantes distintas nunca compartilham preços; empate destaca todas as ofertas mais baratas, inclusive entre páginas.
+- Expor somente dados públicos da empresa, preço, estoque e atualização. Contato WhatsApp permanece na etapa 7.
+- Usar consultas parametrizadas e transação de leitura com snapshot consistente para contagem, dados e mínimo. Validar contratos públicos, filtros, paginação, empates e retirada imediata de ofertas inelegíveis com PostgreSQL temporário.
+- Entrega prevista em um commit funcional, com documentação e `mvnw.cmd -B verify`.
+
+## Validação da etapa 5 — 18/11/2026
+
+- `mvnw.cmd -B verify` e validação final `mvnw.cmd -B -o verify`: BUILD SUCCESS, 93 testes, sem falhas, erros ou testes ignorados. São 15 cenários adicionais de busca/comparação e os 78 anteriores.
+- Consultas públicas por nome/marca/modelo, filtros combinados e individuais, preços mínimos e totais consistentes com fornecedor/região, distinção entre variantes e tentativa de interpretar texto como SQL verificadas por HTTP.
+- Empates destacados nas duas páginas, ordem estável, página além do fim, ausência de ofertas, variante inexistente e parâmetros inválidos verificados.
+- Busca, comparação e opções retiram ofertas após indisponibilidade, estoque zero, moderação pendente/bloqueada, bloqueio da empresa, conta inativa/perfil alterado e requisitos de categoria incompletos.
+- DTO de oferta pública não expõe email, usuário proprietário, razão social, motivo de moderação, versão ou telefone. O contato será implementado na etapa 7.
+- Consultas usam agregação/paginação no PostgreSQL e carregamento conjunto das variantes da página; transação REPEATABLE_READ mantém mínimo, total e resultados no mesmo snapshot.
+- API local iniciada e validada: saúde UP, busca pública responde e OpenAPI documenta os endpoints e os 12 filtros. Banco local permanece sem ofertas publicadas; dados dos testes ficam exclusivamente no PostgreSQL descartável.
+- Container local iniciado manualmente para conferência e política `restart=no` confirmada. Frontend não foi alterado nesta entrega; conexão da interface é a próxima etapa.
+- Contratos documentados em `docs/BUSCA_E_COMPARACAO.md`, README atualizado e diff verificado. Nenhum push ou publicação realizado.

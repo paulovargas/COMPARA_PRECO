@@ -4,7 +4,7 @@ Plataforma para buscar produtos, comparar ofertas equivalentes e entrar em conta
 
 ## Entrega atual
 
-Base de desenvolvimento e modelo do catálogo: API Spring Boot, PostgreSQL com migrações Flyway, entidades e repositories de categorias, marcas, produtos e variantes, OpenAPI, frontend Angular com página de apresentação responsiva e pipeline de validação. Cadastro, login, sessões, permissões, fornecedores, moderação e gerenciamento de ofertas já estão disponíveis na API. Busca, comparação, painéis e telas de conta serão implementados nas próximas etapas; a página inicial informa que o serviço está em preparação.
+Base de desenvolvimento e modelo do catálogo: API Spring Boot, PostgreSQL com migrações Flyway, entidades e repositories de categorias, marcas, produtos e variantes, OpenAPI, frontend Angular com página de apresentação responsiva e pipeline de validação. Cadastro, login, sessões, permissões, fornecedores, moderação e gerenciamento de ofertas, busca pública, filtros e comparação de preços já estão disponíveis na API. As interfaces conectadas, painéis e telas de conta serão implementados nas próximas etapas; a página inicial informa que o serviço está em preparação.
 
 ## Stack
 
@@ -161,3 +161,7 @@ docker compose stop
 ## Próxima entrega
 
 Implementar busca pública, filtros, paginação e comparação de preços, conforme etapa 5 do planejamento. Publicação em servidor ainda depende da definição do destino e dos acessos.
+
+## Busca e comparação pública
+
+A API oferece busca por variante, filtros e comparação de preços sem login. Contratos e exemplos em [docs/BUSCA_E_COMPARACAO.md](docs/BUSCA_E_COMPARACAO.md). A interface conectada será entregue na etapa 6.

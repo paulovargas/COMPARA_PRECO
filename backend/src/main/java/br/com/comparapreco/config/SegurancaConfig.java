@@ -93,6 +93,8 @@ public class SegurancaConfig {
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/swagger-ui/**", "/swagger-ui.html",
                                 "/v3/api-docs/**", "/api/auth/csrf").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/catalogo/variantes", "/api/catalogo/variantes/*/ofertas",
+                                "/api/catalogo/categorias", "/api/catalogo/marcas").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/cadastro", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/fornecedores").hasAnyRole("COMPRADOR", "FORNECEDOR")
                         .requestMatchers("/api/admin/**", "/actuator/info").hasRole("ADMIN")

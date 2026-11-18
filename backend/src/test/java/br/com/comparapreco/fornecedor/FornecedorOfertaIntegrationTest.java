@@ -312,6 +312,115 @@ class FornecedorOfertaIntegrationTest extends PostgresIntegrationTest {
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
+    @Test
+    void deveBuscarPublicamenteECompararSomenteMesmaVarianteSemExporDadosPrivados() throws Exception {
+        ofertaAprovada(empresaA, "6500.00"); ofertaAprovada(empresaB, "6200.00");
+        var outra = variantes.saveAndFlush(new VarianteProduto(produto, 512, "preto", CondicaoProduto.NOVO, Map.of("ram_gb", "8")));
+        var oferta = new Oferta(empresaA, outra, new BigDecimal("100.00"), 1, true);
+        oferta.moderar(ModeracaoOferta.APROVADA, null); ofertas.saveAndFlush(oferta);
+        try (var publico = new ClienteApi(port, mapper)) {
+            var busca = sucesso(publico, publico.get("/api/catalogo/variantes?texto=MODELO"), 200);
+            assertThat(busca.get("totalElementos").asInt()).isEqualTo(2);
+            assertThat(busca.get("itens").get(0).get("menorPreco").decimalValue()).isEqualByComparingTo("100");
+            var comparacao = sucesso(publico, publico.get("/api/catalogo/variantes/" + variante.getId() + "/ofertas"), 200);
+            assertThat(comparacao.get("menorPreco").decimalValue()).isEqualByComparingTo("6200");
+            assertThat(comparacao.get("ofertas").get("totalElementos").asInt()).isEqualTo(2);
+            var itens = comparacao.get("ofertas").get("itens");
+            assertThat(itens.get(0).get("menorPreco").asBoolean()).isTrue();
+            assertThat(itens.get(1).get("menorPreco").asBoolean()).isFalse();
+            assertThat(itens.toString()).doesNotContain("email", "usuarioId", "motivoModeracao", "razaoSocial", "whatsapp", "versao");
+        }
+    }
+
+    @Test
+    void deveDestacarEmpatesEntrePaginasEManterOrdemEstavel() throws Exception {
+        ofertaAprovada(empresaA, "6200.00"); ofertaAprovada(empresaB, "6200.00");
+        try (var publico = new ClienteApi(port, mapper)) {
+            String path = "/api/catalogo/variantes/" + variante.getId() + "/ofertas?tamanho=1&pagina=";
+            var primeira = sucesso(publico, publico.get(path + "0"), 200).get("ofertas");
+            var segunda = sucesso(publico, publico.get(path + "1"), 200).get("ofertas");
+            assertThat(primeira.get("totalPaginas").asInt()).isEqualTo(2);
+            assertThat(primeira.get("itens").get(0).get("menorPreco").asBoolean()).isTrue();
+            assertThat(segunda.get("itens").get(0).get("menorPreco").asBoolean()).isTrue();
+            assertThat(primeira.get("itens").get(0).get("id").asText()).isNotEqualTo(segunda.get("itens").get(0).get("id").asText());
+            assertThat(sucesso(publico, publico.get(path + "1"), 200).get("ofertas")).isEqualTo(segunda);
+            assertThat(sucesso(publico, publico.get(path + "2"), 200).get("ofertas").get("itens").size()).isZero();
+        }
+    }
+
+    @Test
+    void deveAplicarTodosFiltrosECalcularPrecoEContagemNoMesmoConjunto() throws Exception {
+        ofertaAprovada(empresaA, "6500.00"); ofertaAprovada(empresaB, "6200.00");
+        jdbc.update("UPDATE compara_preco.fornecedor SET estado='RJ', cidade='Niterói' WHERE id=?", empresaB.getId());
+        String filtros = "?texto=MARCA&categoriaId=" + produto.getCategoria().getId() + "&marcaId=" + produto.getMarca().getId()
+                + "&modelo=MODELO%20teste&armazenamentoGb=256&cor=PRETO&condicao=NOVO&estado=SP&cidade=S%C3%A3o%20Paulo&fornecedorId=" + empresaA.getId();
+        try (var publico = new ClienteApi(port, mapper)) {
+            var busca = sucesso(publico, publico.get("/api/catalogo/variantes" + filtros), 200);
+            assertThat(busca.get("totalElementos").asInt()).isEqualTo(1);
+            assertThat(busca.get("itens").get(0).get("quantidadeOfertas").asInt()).isEqualTo(1);
+            assertThat(busca.get("itens").get(0).get("menorPreco").decimalValue()).isEqualByComparingTo("6500");
+            var comparacao = sucesso(publico, publico.get("/api/catalogo/variantes/" + variante.getId() + "/ofertas" + filtros), 200);
+            assertThat(comparacao.get("menorPreco").decimalValue()).isEqualByComparingTo("6500");
+            assertThat(comparacao.get("ofertas").get("totalElementos").asInt()).isEqualTo(1);
+            for (String filtro : new String[]{"armazenamentoGb=512", "cor=azul", "condicao=USADO", "modelo=outro", "estado=AC", "cidade=Outra", "marcaId=" + UUID.randomUUID(), "categoriaId=" + UUID.randomUUID(), "fornecedorId=" + UUID.randomUUID(), "texto=%25", "texto=%27%20OR%201%3D1--"}) {
+                assertThat(sucesso(publico, publico.get("/api/catalogo/variantes?" + filtro), 200).get("totalElementos").asInt()).isZero();
+            }
+        }
+    }
+
+    @Test
+    void deveRetirarOfertasDaBuscaComparacaoEOpcoesAposPerdaDeElegibilidade() throws Exception {
+        var oferta = ofertaAprovada(empresaA, "6500.00");
+        try (var publico = new ClienteApi(port, mapper)) {
+            assertThat(sucesso(publico, publico.get("/api/catalogo/categorias"), 200).size()).isEqualTo(1);
+            assertThat(sucesso(publico, publico.get("/api/catalogo/marcas"), 200).size()).isEqualTo(1);
+            for (String alteracao : new String[]{
+                    "UPDATE compara_preco.oferta SET estoque=0",
+                    "UPDATE compara_preco.oferta SET estoque=3, disponivel=false",
+                    "UPDATE compara_preco.oferta SET disponivel=true, moderacao='PENDENTE'",
+                    "UPDATE compara_preco.oferta SET moderacao='BLOQUEADA', motivo_moderacao='Revisão'",
+                    "UPDATE compara_preco.fornecedor SET situacao='BLOQUEADO', motivo_moderacao='Revisão'",
+                    "UPDATE compara_preco.usuario SET ativo=false WHERE perfil='FORNECEDOR'",
+                    "UPDATE compara_preco.usuario SET perfil='COMPRADOR' WHERE perfil='FORNECEDOR'",
+                    "UPDATE compara_preco.categoria SET atributos_obrigatorios='[\"nfc\"]'::jsonb"}) {
+                jdbc.update(alteracao);
+                assertThat(sucesso(publico, publico.get("/api/catalogo/variantes"), 200).get("totalElementos").asInt()).isZero();
+                assertThat(sucesso(publico, publico.get("/api/catalogo/categorias"), 200).size()).isZero();
+                assertThat(sucesso(publico, publico.get("/api/catalogo/marcas"), 200).size()).isZero();
+                // A categoria incompleta torna o recurso inteiro indisponível.
+                var resposta = publico.get("/api/catalogo/variantes/" + variante.getId() + "/ofertas");
+                if (alteracao.contains("atributos_obrigatorios")) { assertThat(resposta.statusCode()).isEqualTo(404); }
+                else {
+                    var comparacao = sucesso(publico, resposta, 200);
+                    assertThat(comparacao.get("menorPreco").isNull()).isTrue();
+                    assertThat(comparacao.get("ofertas").get("totalElementos").asInt()).isZero();
+                }
+                jdbc.update("UPDATE compara_preco.oferta SET estoque=3, disponivel=true, moderacao='APROVADA', motivo_moderacao=NULL WHERE id=?", oferta.getId());
+                jdbc.update("UPDATE compara_preco.fornecedor SET situacao='APROVADO', motivo_moderacao=NULL");
+                jdbc.update("UPDATE compara_preco.usuario SET ativo=true, perfil='FORNECEDOR' WHERE id IN (?, ?)", donoA.getId(), donoB.getId());
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"pagina=-1", "pagina=1000001", "tamanho=0", "tamanho=51", "pagina=1.5", "armazenamentoGb=0", "estado=XX", "condicao=INVALIDA", "marcaId=invalido", "texto=%00"})
+    void deveValidarFiltrosPublicos(String filtro) throws Exception {
+        try (var publico = new ClienteApi(port, mapper)) {
+            assertThat(publico.get("/api/catalogo/variantes?" + filtro).statusCode()).isEqualTo(400);
+        }
+    }
+
+    @Test
+    void deveResponderComparacaoVaziaEVarianteInexistenteSemExigirLogin() throws Exception {
+        try (var publico = new ClienteApi(port, mapper)) {
+            var vazio = sucesso(publico, publico.get("/api/catalogo/variantes/" + variante.getId() + "/ofertas"), 200);
+            assertThat(vazio.get("menorPreco").isNull()).isTrue();
+            assertThat(vazio.get("ofertas").get("totalPaginas").asInt()).isZero();
+            assertThat(publico.get("/api/catalogo/variantes/" + UUID.randomUUID() + "/ofertas").statusCode()).isEqualTo(404);
+            assertThat(publico.enviar("POST", "/api/catalogo/variantes", Map.of()).statusCode()).isEqualTo(401);
+        }
+    }
+
     private Usuario usuario(String email, Perfil perfil) { return usuarios.saveAndFlush(new Usuario("Pessoa de teste", email, hash, perfil)); }
     private Fornecedor empresa(Usuario dono, String nome) {
         var empresa = new Fornecedor(dono, nome + " Ltda", nome, "Descrição", "5511999999999", "São Paulo", UnidadeFederativa.SP);

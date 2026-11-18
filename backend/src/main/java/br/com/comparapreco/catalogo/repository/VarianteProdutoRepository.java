@@ -1,6 +1,8 @@
 package br.com.comparapreco.catalogo.repository;
 
 import java.util.UUID;
+import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +12,9 @@ import br.com.comparapreco.catalogo.entity.VarianteProduto;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface VarianteProdutoRepository extends JpaRepository<VarianteProduto, UUID> {
+    @EntityGraph(attributePaths = {"produto.marca", "produto.categoria"})
+    List<VarianteProduto> findAllByIdIn(Collection<UUID> ids);
+
     @EntityGraph(attributePaths = {"produto.marca", "produto.categoria"})
     Optional<VarianteProduto> findDetalhadaById(UUID id);
     @EntityGraph(attributePaths = {"produto.marca", "produto.categoria"})
