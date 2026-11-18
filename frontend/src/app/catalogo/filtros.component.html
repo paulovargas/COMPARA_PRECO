@@ -1,0 +1,112 @@
+<form [formGroup]="form" (ngSubmit)="buscar()" class="filtros">
+  <div class="campo-busca">
+    <label for="texto">O que você está procurando?</label>
+    <div class="linha-busca">
+      <input
+        id="texto"
+        type="search"
+        formControlName="texto"
+        maxlength="100"
+        placeholder="Busque por produto, marca ou modelo"
+      />
+      <button class="botao principal" type="submit">Buscar</button>
+    </div>
+  </div>
+  <details class="filtros-detalhes">
+    <summary>
+      Filtrar resultados ({{ quantidadeFiltros() }})
+      <span>Categoria, características e região</span>
+    </summary>
+    <div class="grade-filtros">
+      <div class="campo-filtro">
+        <label for="filtro-categoriaId">Categoria</label
+        ><select id="filtro-categoriaId" formControlName="categoriaId">
+          <option value="">Todas as categorias</option>
+          @if (filtro().categoriaId && !temCategoria()) {
+            <option [value]="filtro().categoriaId">
+              Categoria selecionada (sem ofertas atuais)
+            </option>
+          }
+          @for (categoria of categorias(); track categoria.id) {
+            <option [value]="categoria.id">{{ categoria.nome }}</option>
+          }
+        </select>
+      </div>
+      <div class="campo-filtro">
+        <label for="filtro-marcaId">Marca</label
+        ><select id="filtro-marcaId" formControlName="marcaId">
+          <option value="">Todas as marcas</option>
+          @if (filtro().marcaId && !temMarca()) {
+            <option [value]="filtro().marcaId">Marca selecionada (sem ofertas atuais)</option>
+          }
+          @for (marca of marcas(); track marca.id) {
+            <option [value]="marca.id">{{ marca.nome }}</option>
+          }
+        </select>
+      </div>
+      <div class="campo-filtro">
+        <label for="filtro-modelo">Modelo</label
+        ><input
+          id="filtro-modelo"
+          formControlName="modelo"
+          maxlength="120"
+          placeholder="Nome completo do modelo"
+        />
+      </div>
+      <div class="campo-filtro">
+        <label for="filtro-armazenamentoGb">Armazenamento (GB)</label
+        ><input
+          id="filtro-armazenamentoGb"
+          formControlName="armazenamentoGb"
+          inputmode="numeric"
+          placeholder="Ex.: 256"
+          [attr.aria-invalid]="
+            form.controls.armazenamentoGb.touched && form.controls.armazenamentoGb.invalid
+          "
+          aria-describedby="armazenamento-erro"
+        />
+        @if (form.controls.armazenamentoGb.touched && form.controls.armazenamentoGb.invalid) {
+          <small id="armazenamento-erro" class="erro-campo"
+            >Informe um número inteiro positivo.</small
+          >
+        }
+      </div>
+      <div class="campo-filtro">
+        <label for="filtro-cor">Cor</label
+        ><input id="filtro-cor" formControlName="cor" maxlength="80" placeholder="Ex.: preto" />
+      </div>
+      <div class="campo-filtro">
+        <label for="filtro-condicao">Condição</label
+        ><select id="filtro-condicao" formControlName="condicao">
+          <option value="">Todas as condições</option>
+          @for (condicao of condicoes; track condicao[0]) {
+            <option [value]="condicao[0]">{{ condicao[1] }}</option>
+          }
+        </select>
+      </div>
+      <div class="campo-filtro">
+        <label for="filtro-estado">Estado</label
+        ><select id="filtro-estado" formControlName="estado">
+          <option value="">Todo o Brasil</option>
+          @for (estado of estados; track estado) {
+            <option [value]="estado">{{ estado }}</option>
+          }
+        </select>
+      </div>
+      <div class="campo-filtro">
+        <label for="filtro-cidade">Cidade</label
+        ><input
+          id="filtro-cidade"
+          formControlName="cidade"
+          maxlength="100"
+          placeholder="Nome completo da cidade"
+        />
+      </div>
+    </div>
+    <div class="acoes-filtros">
+      <p>Modelo, cor e cidade usam o nome completo.</p>
+      <button class="botao principal" type="submit">Aplicar filtros</button>
+    </div>
+  </details>
+  <button class="link-botao" type="button" (click)="limpar.emit()">Limpar busca e filtros</button>
+</form>

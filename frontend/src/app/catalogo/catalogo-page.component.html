@@ -1,0 +1,229 @@
+<section class="catalogo" aria-labelledby="titulo">
+  @if (varianteId()) {
+    <a class="voltar" routerLink="/" [queryParams]="parametrosVoltar()">← Voltar aos resultados</a>
+    <p class="eyebrow">Compare com confiança</p>
+    <h1 id="titulo">Mesmo produto.<br />Sua melhor escolha.</h1>
+    <p class="introducao">
+      Preços de fornecedores para uma variante com as mesmas características.
+    </p>
+  } @else {
+    <p class="eyebrow">Mais informação. Melhores escolhas.</p>
+    <h1 id="titulo">Uma boa compra começa<br />com uma boa comparação.</h1>
+    <p class="introducao">
+      Encontre seu produto e compare ofertas de diferentes fornecedores em um só lugar.
+    </p>
+  }
+
+  <app-filtros
+    [filtro]="filtro()"
+    [categorias]="categorias()"
+    [marcas]="marcas()"
+    (aplicar)="aplicar($event)"
+    (limpar)="limpar()"
+  />
+  @if (erroOpcoes()) {
+    <p class="aviso" role="status">
+      Não foi possível carregar categorias e marcas. Você ainda pode buscar por texto.
+      <button class="link-botao" (click)="carregarOpcoes()">Tentar carregar filtros</button>
+    </p>
+  }
+  @if (filtro().fornecedorId) {
+    <div class="aviso">
+      Exibindo ofertas do fornecedor selecionado.
+      <button class="link-botao" (click)="removerFornecedor()">Ver todos os fornecedores</button>
+    </div>
+  }
+
+  @let atual = estado();
+  <section
+    class="resultados"
+    aria-label="Resultados"
+    [attr.aria-busy]="atual.tipo === 'carregando'"
+  >
+    @if (atual.tipo === 'carregando') {
+      <div class="estado" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <h2>Buscando as melhores opções…</h2>
+        <p>Estamos consultando as ofertas disponíveis.</p>
+      </div>
+    }
+    @if (atual.tipo === 'erro') {
+      <div class="estado erro" role="alert">
+        <span class="estado-icone" aria-hidden="true">!</span>
+        <h2>Não conseguimos mostrar os resultados</h2>
+        <p>{{ atual.mensagem }}</p>
+        <div class="acoes">
+          <button class="botao principal" (click)="tentarNovamente()">Tentar novamente</button
+          ><button class="botao" (click)="limpar()">Voltar à busca</button>
+        </div>
+      </div>
+    }
+    @if (atual.tipo === 'busca') {
+      <div class="cabecalho-resultados" role="status">
+        <h2>
+          {{ atual.dados.totalElementos }}
+          {{ atual.dados.totalElementos === 1 ? 'variante encontrada' : 'variantes encontradas' }}
+        </h2>
+        <span>Menor preço primeiro</span>
+      </div>
+      @if (atual.dados.itens.length === 0) {
+        <div class="estado" role="status">
+          <span class="estado-icone" aria-hidden="true">⌕</span>
+          <h2>Nenhuma oferta por aqui, ainda</h2>
+          <p>
+            Tente outro produto ou remova alguns filtros. Somente ofertas disponíveis e aprovadas
+            aparecem na busca.
+          </p>
+          <button class="botao" (click)="limpar()">Limpar filtros</button>
+          @if (atual.dados.pagina > 0) {
+            <button class="link-botao" (click)="pagina(0)">Ir para a primeira página</button>
+          }
+        </div>
+      }
+      <div class="grade-produtos">
+        @for (item of atual.dados.itens; track item.variante.id) {
+          <article class="produto">
+            <div class="imagem-produto">
+              @if (item.imagemUrl && !imagensComErro().has(item.variante.id)) {
+                <img
+                  [src]="item.imagemUrl"
+                  [alt]="item.variante.nomeProduto"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  (error)="falhaImagem(item.variante.id)"
+                />
+              } @else {
+                <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                  <rect
+                    x="16"
+                    y="5"
+                    width="32"
+                    height="54"
+                    rx="5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path
+                    d="M27 11h10M28 52h8M24 36l7-9 5 5 5-8"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  /></svg
+                ><span>{{ item.variante.categoria }}</span>
+              }
+            </div>
+            <div class="produto-conteudo">
+              <p class="marca">{{ item.variante.marca }} · {{ item.variante.modelo }}</p>
+              <h3>{{ item.variante.nomeProduto }}</h3>
+              <app-caracteristicas [variante]="item.variante" />
+              <div class="preco-produto">
+                <span>A partir de</span
+                ><strong>{{
+                  item.menorPreco | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
+                }}</strong
+                ><small
+                  >{{ item.quantidadeOfertas }}
+                  {{
+                    item.quantidadeOfertas === 1 ? 'oferta disponível' : 'ofertas disponíveis'
+                  }}</small
+                >
+              </div>
+              <a
+                class="botao principal"
+                [routerLink]="['/comparar', item.variante.id]"
+                [queryParams]="parametrosComparacao()"
+                [attr.aria-label]="'Comparar ofertas de ' + item.variante.nomeProduto"
+                >Comparar ofertas <span aria-hidden="true">↗</span></a
+              >
+            </div>
+          </article>
+        }
+      </div>
+      <app-paginacao
+        [pagina]="atual.dados.pagina"
+        [totalPaginas]="atual.dados.totalPaginas"
+        (mudar)="pagina($event)"
+      />
+    }
+    @if (atual.tipo === 'comparacao') {
+      <div class="resumo-variante">
+        <div>
+          <p class="marca">{{ atual.dados.variante.marca }} · {{ atual.dados.variante.modelo }}</p>
+          <h2>{{ atual.dados.variante.nomeProduto }}</h2>
+          <app-caracteristicas [variante]="atual.dados.variante" />
+        </div>
+        @if (atual.dados.menorPreco !== null) {
+          <div class="resumo-preco">
+            <span>Menor preço encontrado</span
+            ><strong>{{
+              atual.dados.menorPreco | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
+            }}</strong>
+          </div>
+        }
+      </div>
+      <div class="cabecalho-resultados" role="status">
+        <h2>
+          {{ atual.dados.ofertas.totalElementos }}
+          {{
+            atual.dados.ofertas.totalElementos === 1 ? 'oferta disponível' : 'ofertas disponíveis'
+          }}
+        </h2>
+        <span>Menor preço primeiro</span>
+      </div>
+      <div class="lista-ofertas">
+        @for (oferta of atual.dados.ofertas.itens; track oferta.id) {
+          <article class="oferta" [class.destaque]="oferta.menorPreco">
+            <div class="empresa">
+              <span class="avatar" aria-hidden="true">{{ oferta.fornecedor.slice(0, 1) }}</span>
+              <div>
+                <h3>{{ oferta.fornecedor }}</h3>
+                <p>{{ oferta.cidade }} · {{ oferta.estado }}</p>
+              </div>
+            </div>
+            <div class="estoque">
+              <span
+                >{{ oferta.estoque }}
+                {{ oferta.estoque === 1 ? 'unidade em estoque' : 'unidades em estoque' }}</span
+              ><small
+                >Atualizado em
+                {{ oferta.atualizadoEm | date: 'dd/MM/yyyy HH:mm' : '' : 'pt-BR' }}</small
+              >
+            </div>
+            <div class="preco-oferta">
+              @if (oferta.menorPreco) {
+                <span class="selo">Menor preço</span>
+              }
+              <strong>{{
+                oferta.preco | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
+              }}</strong><button class="link-botao" (click)="fornecedor(oferta.fornecedorId)">
+                Ver ofertas deste fornecedor
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+      @if (atual.dados.ofertas.itens.length === 0) {
+        <div class="estado" role="status">
+          <h2>Nenhuma oferta disponível nesta seleção</h2>
+          <p>
+            As ofertas podem ter mudado. Remova filtros ou volte à busca para encontrar outras
+            opções.
+          </p>
+          <button class="botao" (click)="limpar()">Explorar produtos</button>
+          @if (atual.dados.ofertas.pagina > 0) {
+            <button class="link-botao" (click)="pagina(0)">Ir para a primeira página</button>
+          }
+        </div>
+      }
+      <app-paginacao
+        [pagina]="atual.dados.ofertas.pagina"
+        [totalPaginas]="atual.dados.ofertas.totalPaginas"
+        (mudar)="pagina($event)"
+      />
+      <p class="nota">
+        Preços informados pelos fornecedores, sujeitos a alteração. Frete e negociação não estão
+        incluídos. Horários no fuso do seu dispositivo.
+      </p>
+    }
+  </section>
+</section>

@@ -4,7 +4,9 @@ Plataforma para buscar produtos, comparar ofertas equivalentes e entrar em conta
 
 ## Entrega atual
 
-Base de desenvolvimento e modelo do catálogo: API Spring Boot, PostgreSQL com migrações Flyway, entidades e repositories de categorias, marcas, produtos e variantes, OpenAPI, frontend Angular com página de apresentação responsiva e pipeline de validação. Cadastro, login, sessões, permissões, fornecedores, moderação e gerenciamento de ofertas, busca pública, filtros e comparação de preços já estão disponíveis na API. As interfaces conectadas, painéis e telas de conta serão implementados nas próximas etapas; a página inicial informa que o serviço está em preparação.
+API com catálogo, autenticação, permissões, fornecedores, moderação, ofertas e busca pública. A interface Angular permite buscar produtos, aplicar filtros, paginar resultados e comparar ofertas equivalentes, com destaque para todos os empates no menor preço. As telas são responsivas e conectadas à API; conta, favoritos, WhatsApp e painéis serão entregues nas próximas etapas.
+
+Abra [http://127.0.0.1:4200](http://127.0.0.1:4200) após iniciar os serviços abaixo. A busca mostra apenas ofertas publicadas e elegíveis; um banco sem ofertas retorna o estado vazio, sem produtos fictícios. Veja o [guia da interface](docs/INTERFACE_PUBLICA.md).
 
 ## Stack
 
@@ -164,4 +166,4 @@ Implementar busca pública, filtros, paginação e comparação de preços, conf
 
 ## Busca e comparação pública
 
-A API oferece busca por variante, filtros e comparação de preços sem login. Contratos e exemplos em [docs/BUSCA_E_COMPARACAO.md](docs/BUSCA_E_COMPARACAO.md). A interface conectada será entregue na etapa 6.
+A API oferece busca por variante, filtros e comparação de preços sem login. Contratos e exemplos em [docs/BUSCA_E_COMPARACAO.md](docs/BUSCA_E_COMPARACAO.md). A interface já está conectada à API; consulte [docs/INTERFACE_PUBLICA.md](docs/INTERFACE_PUBLICA.md).

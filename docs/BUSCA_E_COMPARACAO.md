@@ -42,7 +42,7 @@ As consultas usam a view `oferta_elegivel`: oferta aprovada, disponível e com e
 
 Contagem, mínimo e página usam o mesmo snapshot PostgreSQL por requisição. Requisições de páginas distintas podem refletir alterações ocorridas entre elas. Valores monetários são decimais; nenhum cálculo usa ponto flutuante. O menor preço exibido não inclui frete ou negociação e não representa checkout.
 
-Não há expiração automática por idade da oferta nesta etapa. A data de atualização é pública; a política de validade permanece uma decisão para produção. WhatsApp, favoritos e fornecedores seguidos serão conectados na etapa 7. A interface de busca será implementada na etapa 6.
+Não há expiração automática por idade da oferta nesta etapa. A data de atualização é pública; a política de validade permanece uma decisão para produção. WhatsApp, favoritos e fornecedores seguidos serão conectados na etapa 7. A interface de busca está disponível conforme `INTERFACE_PUBLICA.md`.
 
 ## Validação
 

@@ -1,37 +1,10 @@
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 <header class="header">
-  <a class="brand" routerLink="/" aria-label="Compara Preço, início">
-    <span class="brand-mark" aria-hidden="true">≋</span>
-    Compara<span>Preço</span>
-  </a>
-  <span class="badge">Em breve</span>
+  <a class="brand" routerLink="/" aria-label="Compara Preço, início"
+    ><span class="brand-mark" aria-hidden="true">≋</span>Compara<span>Preço</span></a
+  ><span class="header-note">Compare. Escolha melhor.</span>
 </header>
-<main id="conteudo">
-  <section class="welcome" aria-labelledby="titulo">
-    <p class="eyebrow">Mais informação. Melhores escolhas.</p>
-    <h1 id="titulo">O melhor preço começa<br />com uma boa comparação.</h1>
-    <p class="description">
-      Estamos preparando um lugar para você encontrar produtos, comparar ofertas de diferentes
-      fornecedores e conversar diretamente com quem vende.
-    </p>
-    <div class="steps" aria-label="Como vai funcionar">
-      <article>
-        <span>01</span>
-        <h2>Encontre seu produto</h2>
-        <p>Pesquise por nome, marca e modelo.</p>
-      </article>
-      <article>
-        <span>02</span>
-        <h2>Compare as ofertas</h2>
-        <p>Veja preços de produtos com as mesmas características.</p>
-      </article>
-      <article>
-        <span>03</span>
-        <h2>Fale com o fornecedor</h2>
-        <p>Tire suas dúvidas e negocie pelo WhatsApp.</p>
-      </article>
-    </div>
-  </section>
-  <router-outlet />
-</main>
-<footer>Compara Preço <span>Conectando quem procura a quem oferece.</span></footer>
+<main id="conteudo" tabindex="-1"><router-outlet /></main>
+<footer>
+  <a routerLink="/">Compara Preço</a><span>Conectando quem procura a quem oferece.</span>
+</footer>

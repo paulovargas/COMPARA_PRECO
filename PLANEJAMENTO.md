@@ -52,7 +52,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | 3 | Cadastro, autenticação, encerramento de sessão, perfis e autorização; testes de acesso indevido e bloqueio | `feat: implementa autenticacao e permissoes` | Concluída |
 | 4 | Cadastro e aprovação de fornecedor, perfil e CRUD de ofertas com isolamento por proprietário | `feat: implementa fornecedores e gerenciamento de ofertas` | Concluída |
 | 5 | API de busca, filtros, paginação e comparação; testes de equivalência, empates e ofertas inelegíveis | `feat: implementa busca e comparacao de precos` | Concluída |
-| 6 | Interface pública responsiva com categorias, busca, filtros e comparação conectadas à API; estados de carregamento, vazio e erro | `feat: cria experiencia de busca e comparacao` | Pendente |
+| 6 | Interface pública responsiva com categorias, busca, filtros e comparação conectadas à API; estados de carregamento, vazio e erro | `feat: cria experiencia de busca e comparacao` | Concluída |
 | 7 | Autenticação na interface, favoritos, fornecedores seguidos e WhatsApp; persistência por usuário | `feat: adiciona conta favoritos e contato` | Pendente |
 | 8 | Painel do fornecedor para empresa, catálogo, preços, estoque e disponibilidade | `feat: cria painel do fornecedor` | Pendente |
 | 9 | CSV/XLSX com modelo de arquivo, limites, validação, prévia e confirmação; testes de arquivos inválidos e duplicidades | `feat: adiciona importacao de ofertas` | Pendente |
@@ -88,7 +88,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 6: conectar a interface Angular à busca pública e à comparação, com filtros, paginação, layout responsivo e estados de carregamento, vazio e erro.
+Etapa 7: implementar autenticação na interface, favoritos de produtos, fornecedores seguidos e contato WhatsApp, com persistência e autorização por usuário.
 
 ## Registro da etapa 1 — 17/11/2026
 
@@ -212,3 +212,24 @@ Etapa 6: conectar a interface Angular à busca pública e à comparação, com f
 - API local iniciada e validada: saúde UP, busca pública responde e OpenAPI documenta os endpoints e os 12 filtros. Banco local permanece sem ofertas publicadas; dados dos testes ficam exclusivamente no PostgreSQL descartável.
 - Container local iniciado manualmente para conferência e política `restart=no` confirmada. Frontend não foi alterado nesta entrega; conexão da interface é a próxima etapa.
 - Contratos documentados em `docs/BUSCA_E_COMPARACAO.md`, README atualizado e diff verificado. Nenhum push ou publicação realizado.
+
+## Execução da etapa 6 — 18/11/2026
+
+- Substituir a apresentação inicial pela busca pública Angular; criar páginas de busca e comparação por variante, serviço HTTP e contratos tipados, mantendo a identidade visual existente.
+- Filtros: texto, categoria, marca, modelo, armazenamento, cor, condição, UF e cidade. A comparação permite selecionar um fornecedor e retornar à busca filtrada. Estado e paginação ficam na URL para recarga, compartilhamento e navegação voltar/avançar.
+- Preservar filtros na comparação e recuperar a página original ao voltar. Cancelar requisições anteriores para impedir resultados antigos após navegação rápida.
+- Mostrar características completas da variante, preços BRL, quantidade de ofertas, empresa/região/estoque/atualização e todos os empates no menor preço. Nenhum botão de conta/WhatsApp sem funcionalidade nesta etapa.
+- Implementar formulários acessíveis, filtros recolhíveis no celular, carregamento, resultado vazio, erro com nova tentativa e validação de parâmetros. Não inserir ofertas fictícias no banco local.
+- Validar com testes de HTTP e navegação/renderização, `npm.cmd run format:check`, `npm.cmd test -- --watch=false`, build de produção e revisão visual local em desktop/celular. Atualizar CI para executar testes do frontend e registrar um commit funcional.
+
+## Validação da etapa 6 — 18/11/2026
+
+- Interface pública Angular conectada à API, com rotas de busca e comparação carregadas sob demanda, contratos tipados, serviço HTTP, formulário reativo e componentes de características/paginação.
+- Filtros e paginação preservados na URL; voltar à busca recupera a página original. Alterações de filtros reiniciam a paginação e requisições anteriores são canceladas. Seleção de fornecedor ocorre na comparação, sem exigir identificadores digitados pelo visitante.
+- Estados de carregamento, vazio, erro com nova tentativa, parâmetro inválido, variante indisponível, falha nas opções e imagem quebrada implementados. Categorias/marcas selecionadas sem ofertas continuam identificáveis no formulário.
+- `npm.cmd run format:check`: passou. `npm.cmd test -- --watch=false`: 18 testes passaram. `npm.cmd run build`: passou sem avisos; bundle inicial aproximadamente 280 kB, catálogo carregado separadamente com aproximadamente 63 kB. Limites de tamanho preservados.
+- Testes verificam consultas e escape de parâmetros, renderização BRL/características, links filtrados, paginação por botões, limites, restauração por URL, cancelamento, validação, retentativa, empates, comparação vazia/404, opções indisponíveis e imagem quebrada. CI atualizado para executar testes do frontend; execução remota continua pendente.
+- Revisão visual no Edge: desktop 1440×1000 e celular 390×844, sem overflow horizontal na busca, comparação e filtros. Navegação por filtros, comparação, empates, retorno e erro de armazenamento verificados no navegador. Labels ajustados para associação explícita aos controles.
+- Navegador integrado indisponível por falha de inicialização do ambiente. Revisão concluída com Edge headless e Playwright temporário, sem adicionar dependências ao projeto. Capturas e roteiro de QA ficam em diretório local ignorado pelo Git.
+- Busca vazia validada contra a API real via proxy; cenários preenchidos usaram interceptação HTTP somente no navegador. Nenhuma oferta fictícia inserida no banco. API e frontend disponíveis localmente; Docker preserva inicialização manual.
+- README, guia `docs/INTERFACE_PUBLICA.md` e documentação da busca atualizados. Backend não alterado nesta etapa; seus 93 testes passaram na etapa 5. Nenhum push ou publicação realizado.

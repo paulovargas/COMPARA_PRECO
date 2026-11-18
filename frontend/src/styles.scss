@@ -11,8 +11,254 @@ body {
   color: #172b29;
   -webkit-font-smoothing: antialiased;
 }
+button,
+input,
+select {
+  font: inherit;
+}
+button,
+a,
+input,
+select,
+summary {
+  touch-action: manipulation;
+}
 a:focus-visible,
-button:focus-visible {
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
   outline: 3px solid #087f6e;
-  outline-offset: 4px;
+  outline-offset: 3px;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+a {
+  color: #087564;
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding: 0.7rem 1rem;
+  border: 1px solid #becfc3;
+  border-radius: 0.5rem;
+  background: white;
+  color: #174d3e;
+  font-size: 0.85rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+.botao:hover:not(:disabled) {
+  background: #eff5f0;
+}
+.botao.principal {
+  background: #087564;
+  color: white;
+  border-color: #087564;
+}
+.botao.principal:hover {
+  background: #065c4f;
+}
+.link-botao {
+  color: #086c5f;
+  background: none;
+  border: 0;
+  padding: 0.5rem 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-size: 0.8rem;
+  min-height: 36px;
+}
+.filtros {
+  background: white;
+  border: 1px solid #dce5dc;
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+.campo-busca > label {
+  display: block;
+  margin-bottom: 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.linha-busca {
+  display: flex;
+  gap: 0.6rem;
+}
+.linha-busca input {
+  flex: 1;
+  min-width: 0;
+}
+.linha-busca .botao {
+  min-width: 100px;
+}
+.filtros input,
+.filtros select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.75rem;
+  border: 1px solid #c9d6cc;
+  background: #fff;
+  border-radius: 0.45rem;
+  color: #172b29;
+  font-size: 0.9rem;
+}
+.filtros input::placeholder {
+  color: #6d7e75;
+}
+.filtros-detalhes {
+  margin-top: 1rem;
+  border-top: 1px solid #e5ece6;
+}
+.filtros-detalhes summary {
+  cursor: pointer;
+  padding: 1rem 0 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+.filtros-detalhes summary span {
+  color: #61746a;
+  font-size: 0.75rem;
+  font-weight: 400;
+  margin-left: 1rem;
+}
+.grade-filtros {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0.6rem 0;
+}
+.grade-filtros .campo-filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+.acoes-filtros {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.5rem 0;
+}
+.acoes-filtros p {
+  color: #61746a;
+  font-size: 0.75rem;
+}
+.erro-campo {
+  color: #a23220;
+  font-weight: 400;
+}
+.aviso {
+  padding: 0.8rem 1rem;
+  background: #fff4dc;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  margin: 1rem 0;
+  line-height: 1.5;
+}
+@media (max-width: 850px) {
+  .grade-filtros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .filtros {
+    padding: 1rem;
+  }
+  .filtros-detalhes summary span {
+    display: block;
+    margin: 0.4rem 0 0 1rem;
+  }
+  .grade-filtros {
+    grid-template-columns: 1fr;
+  }
+  .acoes-filtros {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .linha-busca {
+    flex-wrap: wrap;
+  }
+  .linha-busca input {
+    flex-basis: 100%;
+  }
+  .linha-busca .botao {
+    width: 100%;
+  }
+}
+
+.estado {
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  background: white;
+  border: 1px dashed #cbd8cf;
+  border-radius: 1rem;
+}
+.estado h2 {
+  font-size: 1.2rem;
+  margin: 1rem 0 0.6rem;
+}
+.estado p {
+  max-width: 490px;
+  margin: 0 auto 1.5rem;
+  color: #52665e;
+  line-height: 1.65;
+}
+.estado-icone {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: #edf4ed;
+  font-size: 1.7rem;
+}
+.acoes {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.estado > .link-botao {
+  display: block;
+  margin: 1rem auto 0;
+}
+.erro {
+  border-color: #e5b8aa;
+}
+.spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e1ebe5;
+  border-top-color: #087564;
+  border-radius: 50%;
+  animation: girar 1s linear infinite;
+}
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
 }
