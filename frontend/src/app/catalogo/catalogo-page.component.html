@@ -116,6 +116,7 @@
               <p class="marca">{{ item.variante.marca }} · {{ item.variante.modelo }}</p>
               <h3>{{ item.variante.nomeProduto }}</h3>
               <app-caracteristicas [variante]="item.variante" />
+              <app-salvar-button tipo="produtos" [id]="item.variante.produtoId" />
               <div class="preco-produto">
                 <span>A partir de</span
                 ><strong>{{
@@ -151,6 +152,7 @@
           <p class="marca">{{ atual.dados.variante.marca }} · {{ atual.dados.variante.modelo }}</p>
           <h2>{{ atual.dados.variante.nomeProduto }}</h2>
           <app-caracteristicas [variante]="atual.dados.variante" />
+          <app-salvar-button tipo="produtos" [id]="atual.dados.variante.produtoId" />
         </div>
         @if (atual.dados.menorPreco !== null) {
           <div class="resumo-preco">
@@ -178,6 +180,7 @@
               <div>
                 <h3>{{ oferta.fornecedor }}</h3>
                 <p>{{ oferta.cidade }} · {{ oferta.estado }}</p>
+                <app-salvar-button tipo="fornecedores" [id]="oferta.fornecedorId" />
               </div>
             </div>
             <div class="estoque">
@@ -195,7 +198,10 @@
               }
               <strong>{{
                 oferta.preco | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
-              }}</strong><button class="link-botao" (click)="fornecedor(oferta.fornecedorId)">
+              }}</strong><app-contato [ofertaId]="oferta.id" /><button
+                class="link-botao"
+                (click)="fornecedor(oferta.fornecedorId)"
+              >
                 Ver ofertas deste fornecedor
               </button>
             </div>

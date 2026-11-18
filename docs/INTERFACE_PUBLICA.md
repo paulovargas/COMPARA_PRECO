@@ -32,7 +32,7 @@ Abra http://127.0.0.1:4200. O proxy de desenvolvimento encaminha `/api` à API e
 - “Voltar aos resultados” recupera a página da busca original. Filtros e paginação ficam na URL, permitindo recarregar, compartilhar e navegar com voltar/avançar. Alterar filtros começa na página zero.
 - Falhas de conexão permitem nova tentativa. Parâmetros inválidos, comparação indisponível, ausência de ofertas, falha nas opções e imagens quebradas têm tratamento próprio. Requisições antigas são canceladas ao navegar.
 
-Os valores usam BRL e os horários, o fuso do dispositivo. As ofertas não incluem frete ou negociação. Conta, favoritos e WhatsApp seguem para a etapa 7.
+Os valores usam BRL e os horários, o fuso do dispositivo. As ofertas não incluem frete ou negociação. Conta, favoritos, fornecedores seguidos e WhatsApp estão disponíveis conforme [CONTA_E_CONTATO.md](CONTA_E_CONTATO.md).
 
 ## Dados e verificação
 

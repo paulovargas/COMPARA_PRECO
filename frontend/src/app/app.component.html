@@ -2,8 +2,32 @@
 <header class="header">
   <a class="brand" routerLink="/" aria-label="Compara Preço, início"
     ><span class="brand-mark" aria-hidden="true">≋</span>Compara<span>Preço</span></a
-  ><span class="header-note">Compare. Escolha melhor.</span>
+  >
+  <nav class="conta-nav" aria-label="Conta">
+    @if (auth.sessao.estado() === 'carregando') {
+      <span role="status">Carregando conta…</span>
+    } @else if (auth.sessao.estado() === 'erro') {
+      <button class="link-botao" (click)="carregarSessao()">Tentar carregar conta</button>
+    } @else if (auth.sessao.usuario(); as usuario) {
+      <span class="nome-usuario">Olá, {{ usuario.nome }}</span
+      ><a routerLink="/minha-lista">Minha lista</a
+      ><button class="link-botao" [disabled]="saindo()" (click)="sair()">
+        {{ saindo() ? 'Saindo…' : 'Sair' }}
+      </button>
+    } @else {
+      <a routerLink="/entrar" [queryParams]="{ retorno: retorno() }">Entrar</a
+      ><a class="botao" routerLink="/cadastro" [queryParams]="{ retorno: retorno() }"
+        >Criar conta</a
+      >
+    }
+  </nav>
 </header>
+@if (auth.sessao.aviso()) {
+  <p class="aviso aviso-sessao" role="status">{{ auth.sessao.aviso() }}</p>
+}
+@if (erroSaida()) {
+  <p class="aviso aviso-sessao" role="alert">{{ erroSaida() }}</p>
+}
 <main id="conteudo" tabindex="-1"><router-outlet /></main>
 <footer>
   <a routerLink="/">Compara Preço</a><span>Conectando quem procura a quem oferece.</span>

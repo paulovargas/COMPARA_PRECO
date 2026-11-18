@@ -1,0 +1,131 @@
+<section class="conta" aria-labelledby="titulo-lista">
+  <a routerLink="/">← Continuar buscando</a>
+  <p class="eyebrow">Escolhas que você quer acompanhar</p>
+  <h1 id="titulo-lista">Minha lista</h1>
+  <p>
+    Seus produtos favoritos e fornecedores seguidos, disponíveis sempre que você entrar na sua
+    conta.
+  </p>
+  <nav class="abas" aria-label="Listas salvas">
+    <a
+      class="botao"
+      [class.ativa]="tipo() === 'produtos'"
+      routerLink="/minha-lista"
+      [queryParams]="{ tipo: 'produtos' }"
+      [attr.aria-current]="tipo() === 'produtos' ? 'page' : null"
+      >Produtos favoritos</a
+    ><a
+      class="botao"
+      [class.ativa]="tipo() === 'fornecedores'"
+      routerLink="/minha-lista"
+      [queryParams]="{ tipo: 'fornecedores' }"
+      [attr.aria-current]="tipo() === 'fornecedores' ? 'page' : null"
+      >Fornecedores seguidos</a
+    >
+  </nav>
+  @let atual = estado();
+  @if (atual.tipo === 'carregando') {
+    <div class="vazio" role="status">Carregando sua lista…</div>
+  }
+  @if (atual.tipo === 'erro') {
+    <div class="vazio" role="alert">
+      <h2>Não foi possível carregar sua lista</h2>
+      <p>Confira sua conexão e tente novamente. Se sua sessão expirou, entre na conta.</p>
+      <button class="botao" (click)="recarregar()">Tentar novamente</button>
+      <a routerLink="/entrar" [queryParams]="{ retorno: '/minha-lista' }">Entrar</a>
+    </div>
+  }
+  @if (atual.tipo === 'produtos') {
+    <p role="status">
+      {{ atual.dados.totalElementos }}
+      {{ atual.dados.totalElementos === 1 ? 'produto na sua lista' : 'produtos na sua lista' }}
+    </p>
+    <div class="lista">
+      @for (produto of atual.dados.itens; track produto.produtoId) {
+        <article class="item">
+          <div>
+            <h2>{{ produto.nome }}</h2>
+            <p>{{ produto.marca }} · {{ produto.modelo }}</p>
+            @if (!produto.disponivel) {
+              <span class="indisponivel">Sem ofertas disponíveis no momento</span>
+            }
+          </div>
+          <div class="acoes">
+            <a
+              class="botao"
+              routerLink="/"
+              [queryParams]="{ marcaId: produto.marcaId, modelo: produto.modelo }"
+              >Ver variantes e ofertas</a
+            ><app-salvar-button
+              tipo="produtos"
+              [id]="produto.produtoId"
+              (alterado)="recarregar()"
+            />
+          </div>
+        </article>
+      } @empty {
+        <div class="vazio">
+          <h2>Nenhum produto nesta página</h2>
+          <p>Use “Favoritar produto” na busca ou na comparação para montar sua lista.</p>
+          <a routerLink="/">Explorar produtos</a>
+          @if (atual.dados.pagina > 0) {
+            <button class="link-botao" (click)="pagina(0)">Ir para a primeira página</button>
+          }
+        </div>
+      }
+    </div>
+    <app-paginacao
+      [pagina]="atual.dados.pagina"
+      [totalPaginas]="atual.dados.totalPaginas"
+      (mudar)="pagina($event)"
+    />
+  }
+  @if (atual.tipo === 'fornecedores') {
+    <p role="status">
+      {{ atual.dados.totalElementos }}
+      {{ atual.dados.totalElementos === 1 ? 'fornecedor seguido' : 'fornecedores seguidos' }}
+    </p>
+    <div class="lista">
+      @for (fornecedor of atual.dados.itens; track fornecedor.fornecedorId) {
+        <article class="item">
+          <div>
+            <h2>{{ fornecedor.nome }}</h2>
+            <p>{{ fornecedor.cidade }} · {{ fornecedor.estado }}</p>
+            @if (!fornecedor.disponivel) {
+              <span class="indisponivel">Fornecedor indisponível no momento</span>
+            }
+          </div>
+          <div class="acoes">
+            @if (fornecedor.disponivel) {
+              <a
+                class="botao"
+                routerLink="/"
+                [queryParams]="{ fornecedorId: fornecedor.fornecedorId }"
+                >Ver ofertas</a
+              >
+            }
+            <app-salvar-button
+              tipo="fornecedores"
+              [id]="fornecedor.fornecedorId"
+              (alterado)="recarregar()"
+            />
+          </div>
+        </article>
+      } @empty {
+        <div class="vazio">
+          <h2>Nenhum fornecedor nesta página</h2>
+          <p>Use “Seguir fornecedor” ao comparar ofertas para acompanhar suas opções.</p>
+          <a routerLink="/">Explorar produtos</a>
+          @if (atual.dados.pagina > 0) {
+            <button class="link-botao" (click)="pagina(0)">Ir para a primeira página</button>
+          }
+        </div>
+      }
+    </div>
+    <app-paginacao
+      [pagina]="atual.dados.pagina"
+      [totalPaginas]="atual.dados.totalPaginas"
+      (mudar)="pagina($event)"
+    />
+  }
+</section>

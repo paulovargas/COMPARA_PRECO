@@ -26,6 +26,8 @@ import {
 } from './catalogo.models';
 import { PaginacaoComponent } from './paginacao.component';
 import { FiltrosComponent } from './filtros.component';
+import { SalvarButtonComponent } from '../conta/salvar-button.component';
+import { ContatoComponent } from '../conta/contato.component';
 import { CaracteristicasComponent } from './caracteristicas.component';
 
 type EstadoPagina =
@@ -38,6 +40,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 @Component({
   selector: 'app-catalogo-page',
   imports: [
+    SalvarButtonComponent,
+    ContatoComponent,
     PaginacaoComponent,
     RouterLink,
     CurrencyPipe,

@@ -4,7 +4,7 @@ Plataforma para buscar produtos, comparar ofertas equivalentes e entrar em conta
 
 ## Entrega atual
 
-API com catálogo, autenticação, permissões, fornecedores, moderação, ofertas e busca pública. A interface Angular permite buscar produtos, aplicar filtros, paginar resultados e comparar ofertas equivalentes, com destaque para todos os empates no menor preço. As telas são responsivas e conectadas à API; conta, favoritos, WhatsApp e painéis serão entregues nas próximas etapas.
+API com catálogo, autenticação, permissões, fornecedores, moderação, ofertas e busca pública. A interface Angular permite buscar produtos, aplicar filtros, paginar resultados e comparar ofertas equivalentes, com destaque para todos os empates no menor preço. As telas são responsivas e conectadas à API, com cadastro/login/logout, produtos favoritos, fornecedores seguidos e contato WhatsApp. Painéis de fornecedor/administração e importação serão entregues nas próximas etapas.
 
 Abra [http://127.0.0.1:4200](http://127.0.0.1:4200) após iniciar os serviços abaixo. A busca mostra apenas ofertas publicadas e elegíveis; um banco sem ofertas retorna o estado vazio, sem produtos fictícios. Veja o [guia da interface](docs/INTERFACE_PUBLICA.md).
 
@@ -167,3 +167,7 @@ Implementar busca pública, filtros, paginação e comparação de preços, conf
 ## Busca e comparação pública
 
 A API oferece busca por variante, filtros e comparação de preços sem login. Contratos e exemplos em [docs/BUSCA_E_COMPARACAO.md](docs/BUSCA_E_COMPARACAO.md). A interface já está conectada à API; consulte [docs/INTERFACE_PUBLICA.md](docs/INTERFACE_PUBLICA.md).
+
+## Conta e contato
+
+Cadastre-se e entre pela interface para salvar produtos e seguir fornecedores em “Minha lista”. A comparação permite consultar o contato e abrir o WhatsApp. Contratos e regras em [docs/CONTA_E_CONTATO.md](docs/CONTA_E_CONTATO.md).

@@ -53,7 +53,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | 4 | Cadastro e aprovação de fornecedor, perfil e CRUD de ofertas com isolamento por proprietário | `feat: implementa fornecedores e gerenciamento de ofertas` | Concluída |
 | 5 | API de busca, filtros, paginação e comparação; testes de equivalência, empates e ofertas inelegíveis | `feat: implementa busca e comparacao de precos` | Concluída |
 | 6 | Interface pública responsiva com categorias, busca, filtros e comparação conectadas à API; estados de carregamento, vazio e erro | `feat: cria experiencia de busca e comparacao` | Concluída |
-| 7 | Autenticação na interface, favoritos, fornecedores seguidos e WhatsApp; persistência por usuário | `feat: adiciona conta favoritos e contato` | Pendente |
+| 7 | Autenticação na interface, favoritos, fornecedores seguidos e WhatsApp; persistência por usuário | `feat: adiciona conta favoritos e contato` | Concluída |
 | 8 | Painel do fornecedor para empresa, catálogo, preços, estoque e disponibilidade | `feat: cria painel do fornecedor` | Pendente |
 | 9 | CSV/XLSX com modelo de arquivo, limites, validação, prévia e confirmação; testes de arquivos inválidos e duplicidades | `feat: adiciona importacao de ofertas` | Pendente |
 | 10 | Painel administrativo com cadastros, moderação, bloqueio, permissões, estatísticas, relatórios e configurações | `feat: cria painel administrativo` | Pendente |
@@ -88,7 +88,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 7: implementar autenticação na interface, favoritos de produtos, fornecedores seguidos e contato WhatsApp, com persistência e autorização por usuário.
+Etapa 8: implementar painel do fornecedor, incluindo cadastro/perfil da empresa, catálogo de variantes e gerenciamento de ofertas, preços, estoque e disponibilidade. Detalhar o fluxo de solicitação de produto/variante ausente para a gestão do catálogo.
 
 ## Registro da etapa 1 — 17/11/2026
 
@@ -233,3 +233,25 @@ Etapa 7: implementar autenticação na interface, favoritos de produtos, fornece
 - Navegador integrado indisponível por falha de inicialização do ambiente. Revisão concluída com Edge headless e Playwright temporário, sem adicionar dependências ao projeto. Capturas e roteiro de QA ficam em diretório local ignorado pelo Git.
 - Busca vazia validada contra a API real via proxy; cenários preenchidos usaram interceptação HTTP somente no navegador. Nenhuma oferta fictícia inserida no banco. API e frontend disponíveis localmente; Docker preserva inicialização manual.
 - README, guia `docs/INTERFACE_PUBLICA.md` e documentação da busca atualizados. Backend não alterado nesta etapa; seus 93 testes passaram na etapa 5. Nenhum push ou publicação realizado.
+
+## Execução da etapa 7 — 18/11/2026
+
+- Implementar cadastro/login/logout Angular com sessão por cookie, restauração ao abrir a aplicação, retorno interno à página de origem, formulários validados e proteção CSRF obtida antes das mutações. Não armazenar credenciais/tokens no localStorage nem repetir mutações automaticamente.
+- Criar migração e API privada `/api/conta` de favoritos por produto e fornecedores seguidos. PUT/DELETE idempotentes, chaves compostas por proprietário/recurso, paginação, consulta de marcação e isolamento pelo usuário autenticado, sem proprietário informado no payload.
+- Favoritar exige produto com oferta elegível; seguir exige fornecedor aprovado com conta ativa. Itens já salvos permanecem listados quando indisponíveis e podem ser removidos. A lista de produtos leva à busca das suas variantes, sem agrupar preços de características diferentes.
+- Integrar botões de favoritar/seguir ao catálogo e comparação e criar página Minha lista. Visitantes são encaminhados ao login preservando destino; mutações exigem sessão e CSRF. Bloqueio/expiração removem o acesso aos dados privados.
+- Criar contato público por oferta com consulta atual de elegibilidade, mensagem com características da variante e link wa.me corretamente codificado. A interface obtém o link e permite abrir a conversa por ação explícita; sem envio automático de mensagem.
+- Validar backend com PostgreSQL descartável (isolamento, duplicação, CSRF, bloqueios, listas indisponíveis e contato); frontend com testes de sessão, navegação, formulários e ações. Executar build/formatação/testes e revisão visual local. Registrar documentação e commits coerentes, sem push/publicação.
+
+## Validação da etapa 7 — 18/11/2026
+
+- Migração V5 cria favoritos por produto e fornecedores seguidos, com chaves compostas, integridade referencial e índices de paginação. API privada aplica o proprietário da sessão, sem escolha pelo payload, e operações PUT/DELETE idempotentes.
+- Listas paginadas preservam itens temporariamente indisponíveis, informam disponibilidade atual e permitem remoção. Produtos favoritos abrem a busca por modelo/marca para escolher a variante, sem comparar características diferentes.
+- Contato público consulta a view de elegibilidade e retorna link wa.me com mensagem UTF-8 contendo características da variante, sem envio automático. Interface consulta o contato e permite abrir o WhatsApp por ação explícita em nova aba protegida.
+- Angular implementa cadastro, login, logout, restauração da sessão, retorno interno, validação, página Minha lista, ações de favorito/seguir e tratamento de falhas. CSRF é obtido antes das mutações; senhas/tokens não são guardados no localStorage. Alterações não são repetidas automaticamente.
+- Respostas antigas não sobrescrevem login recente ou marcações alteradas em outro botão. A expiração limpa a identidade e retira a lista privada da tela, redirecionando para login.
+- Backend: `mvnw.cmd -B -o verify` passou com 103 testes, sem falhas/erros/ignorados; 10 cenários adicionais verificam isolamento, proprietário, idempotência, indisponibilidade, paginação, sessão/CSRF, bloqueio e contato. Os 93 cenários anteriores continuam passando.
+- Frontend: `npm.cmd run format:check`, `npm.cmd test -- --watch=false` e `npm.cmd run build` passaram. São 44 testes, incluindo 26 cenários adicionais de sessão, CSRF, formulários, retorno, listas, sincronização, contato e expiração. Bundle inicial aproximadamente 288 kB, sem avisos de orçamento.
+- Revisão visual no Edge em 1440×1000 e 390×844: cadastro/login/logout, CSRF, favoritos/seguidos, retorno, recarga, contato e sessão expirada passaram. Lista e cadastro sem overflow horizontal no celular. Capturas locais revisadas; dados preenchidos foram simulados apenas nas respostas do navegador, sem criar contas/ofertas no banco e sem abrir WhatsApp.
+- Migração V5 aplicada com sucesso no banco local e API reiniciada após identificar a instância anterior deste projeto na porta 8080. Saúde UP, endpoints presentes no OpenAPI e lista sem autenticação retorna 401. PostgreSQL saudável e `restart=no` preservado.
+- README, guias de interface/autenticação/busca e `docs/CONTA_E_CONTATO.md` atualizados. Frontend disponível em http://127.0.0.1:4200. Pipeline remoto não executado; nenhum push ou publicação realizado.

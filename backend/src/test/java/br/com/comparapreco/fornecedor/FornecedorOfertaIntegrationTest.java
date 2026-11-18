@@ -421,6 +421,124 @@ class FornecedorOfertaIntegrationTest extends PostgresIntegrationTest {
         }
     }
 
+    @Test
+    void deveSalvarProdutosESeguirFornecedoresComIsolamentoEIdempotencia() throws Exception {
+        ofertaAprovada(empresaA, "6200.00");
+        var compradorA = usuario("lista-a@teste.local", Perfil.COMPRADOR);
+        var compradorB = usuario("lista-b@teste.local", Perfil.COMPRADOR);
+        String produtoPath = "/api/conta/favoritos/produtos/" + produto.getId();
+        String fornecedorPath = "/api/conta/fornecedores-seguidos/" + empresaA.getId();
+        try (var a = cliente(compradorA); var b = cliente(compradorB)) {
+            for (String path : new String[]{produtoPath, fornecedorPath}) {
+                assertThat(a.enviar("PUT", path, Map.of("usuarioId", compradorB.getId())).statusCode()).isEqualTo(204);
+                assertThat(a.enviar("PUT", path, null).statusCode()).isEqualTo(204);
+                assertThat(sucesso(a, a.get(path), 200).get("salvo").asBoolean()).isTrue();
+                assertThat(sucesso(b, b.get(path), 200).get("salvo").asBoolean()).isFalse();
+                assertThat(b.enviar("DELETE", path, null).statusCode()).isEqualTo(204);
+                assertThat(sucesso(a, a.get(path), 200).get("salvo").asBoolean()).isTrue();
+            }
+            assertThat(sucesso(a, a.get("/api/conta/favoritos/produtos"), 200).get("totalElementos").asInt()).isEqualTo(1);
+            assertThat(sucesso(b, b.get("/api/conta/favoritos/produtos"), 200).get("totalElementos").asInt()).isZero();
+            assertThat(sucesso(a, a.get("/api/conta/fornecedores-seguidos"), 200).get("itens").toString()).doesNotContain("email", "usuarioId", "whatsapp", "motivoModeracao");
+            for (String path : new String[]{produtoPath, fornecedorPath}) {
+                assertThat(a.enviar("DELETE", path, null).statusCode()).isEqualTo(204);
+                assertThat(a.enviar("DELETE", path, null).statusCode()).isEqualTo(204);
+                assertThat(sucesso(a, a.get(path), 200).get("salvo").asBoolean()).isFalse();
+            }
+        }
+    }
+
+    @Test
+    void devePreservarItensIndisponiveisNaListaPermitirRemocaoERecusarNovosSalvamentos() throws Exception {
+        ofertaAprovada(empresaA, "6200.00");
+        var comprador = usuario("lista@teste.local", Perfil.COMPRADOR);
+        try (var a = cliente(comprador)) {
+            String produtoPath = "/api/conta/favoritos/produtos/" + produto.getId();
+            String fornecedorPath = "/api/conta/fornecedores-seguidos/" + empresaA.getId();
+            assertThat(a.enviar("PUT", produtoPath, null).statusCode()).isEqualTo(204);
+            assertThat(a.enviar("PUT", fornecedorPath, null).statusCode()).isEqualTo(204);
+            jdbc.update("UPDATE compara_preco.fornecedor SET situacao='BLOQUEADO', motivo_moderacao='Revisão' WHERE id=?", empresaA.getId());
+            for (String path : new String[]{"/api/conta/favoritos/produtos", "/api/conta/fornecedores-seguidos"}) {
+                var lista = sucesso(a, a.get(path), 200);
+                assertThat(lista.get("totalElementos").asInt()).isEqualTo(1);
+                assertThat(lista.get("itens").get(0).get("disponivel").asBoolean()).isFalse();
+            }
+            for (String path : new String[]{produtoPath, fornecedorPath}) {
+                assertThat(a.enviar("PUT", path, null).statusCode()).isEqualTo(204);
+                assertThat(a.enviar("DELETE", path, null).statusCode()).isEqualTo(204);
+                assertThat(a.enviar("PUT", path, null).statusCode()).isEqualTo(404);
+            }
+        }
+    }
+
+    @Test
+    void deveExigirSessaoECsrfNasListasERevogarAcessoAposBloqueio() throws Exception {
+        var comprador = usuario("lista-bloqueio@teste.local", Perfil.COMPRADOR);
+        try (var anonimo = new ClienteApi(port, mapper); var a = cliente(comprador)) {
+            assertThat(anonimo.get("/api/conta/favoritos/produtos").statusCode()).isEqualTo(401);
+            assertThat(anonimo.enviar("PUT", "/api/conta/fornecedores-seguidos/" + empresaA.getId(), null).statusCode()).isEqualTo(401);
+            assertThat(a.enviarSemCsrf("PUT", "/api/conta/fornecedores-seguidos/" + empresaA.getId(), null).statusCode()).isEqualTo(403);
+            jdbc.update("UPDATE compara_preco.usuario SET ativo=false WHERE id=?", comprador.getId());
+            assertThat(a.get("/api/conta/fornecedores-seguidos").statusCode()).isEqualTo(401);
+        }
+    }
+
+    @Test
+    void deveRecusarProdutosSemOfertasERecursosInexistentes() throws Exception {
+        try (var a = cliente(donoA)) {
+            assertThat(a.enviar("PUT", "/api/conta/favoritos/produtos/" + produto.getId(), null).statusCode()).isEqualTo(404);
+            assertThat(a.enviar("PUT", "/api/conta/favoritos/produtos/" + UUID.randomUUID(), null).statusCode()).isEqualTo(404);
+            assertThat(a.enviar("PUT", "/api/conta/fornecedores-seguidos/" + UUID.randomUUID(), null).statusCode()).isEqualTo(404);
+            jdbc.update("UPDATE compara_preco.usuario SET ativo=false WHERE id=?", donoB.getId());
+            assertThat(a.enviar("PUT", "/api/conta/fornecedores-seguidos/" + empresaB.getId(), null).statusCode()).isEqualTo(404);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings={"pagina=-1", "pagina=1000001", "tamanho=0", "tamanho=51"})
+    void deveValidarPaginacaoDasListas(String filtro) throws Exception {
+        try (var a = cliente(donoA)) {
+            assertThat(a.get("/api/conta/favoritos/produtos?" + filtro).statusCode()).isEqualTo(400);
+            assertThat(a.get("/api/conta/fornecedores-seguidos?" + filtro).statusCode()).isEqualTo(400);
+        }
+    }
+
+    @Test
+    void devePaginarListasSemPerderTotais() throws Exception {
+        try (var a = cliente(donoA)) {
+            for (var empresa : new Fornecedor[]{empresaA, empresaB}) {
+                assertThat(a.enviar("PUT", "/api/conta/fornecedores-seguidos/" + empresa.getId(), null).statusCode()).isEqualTo(204);
+            }
+            var primeira = sucesso(a, a.get("/api/conta/fornecedores-seguidos?tamanho=1"), 200);
+            var segunda = sucesso(a, a.get("/api/conta/fornecedores-seguidos?tamanho=1&pagina=1"), 200);
+            assertThat(primeira.get("totalPaginas").asInt()).isEqualTo(2);
+            assertThat(primeira.get("itens").get(0).get("fornecedorId").asText()).isNotEqualTo(segunda.get("itens").get(0).get("fornecedorId").asText());
+            var fora = sucesso(a, a.get("/api/conta/fornecedores-seguidos?tamanho=1&pagina=2"), 200);
+            assertThat(fora.get("totalElementos").asInt()).isEqualTo(2);
+            assertThat(fora.get("itens").size()).isZero();
+        }
+    }
+
+    @Test
+    void deveGerarContatoPublicoCodificadoComCaracteristicasERecusarOfertaInelegivel() throws Exception {
+        var oferta = ofertaAprovada(empresaA, "6200.00");
+        try (var publico = new ClienteApi(port, mapper)) {
+            String path = "/api/catalogo/ofertas/" + oferta.getId() + "/contato";
+            var response = publico.get(path);
+            String url = sucesso(publico, response, 200).get("url").asText();
+            assertThat(response.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+            assertThat(url).startsWith("https://wa.me/5511999999999?text=");
+            String mensagem = java.net.URLDecoder.decode(url.substring(url.indexOf("?text=") + 6), java.nio.charset.StandardCharsets.UTF_8);
+            assertThat(mensagem).contains("Olá!", "Produto teste", "Modelo teste", "256 GB", "preto", "NOVO", "ram_gb: 8");
+            jdbc.update("UPDATE compara_preco.oferta SET estoque=0 WHERE id=?", oferta.getId());
+            assertThat(publico.get(path).statusCode()).isEqualTo(404);
+            jdbc.update("UPDATE compara_preco.oferta SET estoque=3 WHERE id=?", oferta.getId());
+            jdbc.update("UPDATE compara_preco.fornecedor SET situacao='BLOQUEADO', motivo_moderacao='Revisão' WHERE id=?", empresaA.getId());
+            assertThat(publico.get(path).statusCode()).isEqualTo(404);
+            assertThat(publico.get("/api/catalogo/ofertas/" + UUID.randomUUID() + "/contato").statusCode()).isEqualTo(404);
+        }
+    }
+
     private Usuario usuario(String email, Perfil perfil) { return usuarios.saveAndFlush(new Usuario("Pessoa de teste", email, hash, perfil)); }
     private Fornecedor empresa(Usuario dono, String nome) {
         var empresa = new Fornecedor(dono, nome + " Ltda", nome, "Descrição", "5511999999999", "São Paulo", UnidadeFederativa.SP);

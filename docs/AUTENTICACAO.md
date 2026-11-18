@@ -126,3 +126,7 @@ Erros seguem o contrato `instante`, `status`, `codigo`, `mensagem` e `campos`. N
 Os formulários de conta serão implementados na etapa 7 do planejamento.
 
 Referências de manutenção: [sessões JDBC do Spring Boot](https://docs.spring.io/spring-boot/reference/web/spring-session.html), [persistência de autenticação](https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html), [CSRF](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html) e [armazenamento de senhas](https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html).
+
+## Interface de conta
+
+Cadastro, login, logout e restauração de sessão estão conectados à interface Angular. O interceptor consulta CSRF antes de cada mutação e não repete alterações automaticamente. Expiração limpa a identidade e retira a lista privada da tela. Consulte [CONTA_E_CONTATO.md](CONTA_E_CONTATO.md).

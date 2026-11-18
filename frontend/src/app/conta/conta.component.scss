@@ -1,0 +1,136 @@
+.conta {
+  max-width: 1100px;
+  margin: auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+.formulario {
+  max-width: 510px;
+}
+.conta > a {
+  font-size: 0.85rem;
+}
+.eyebrow {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #087564;
+  font-weight: 700;
+  margin: 2rem 0 1rem;
+}
+h1 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  letter-spacing: -0.04em;
+  margin: 0 0 1rem;
+}
+p {
+  color: #52665e;
+  line-height: 1.6;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: white;
+  padding: 1.5rem;
+  border: 1px solid #dce5dc;
+  border-radius: 1rem;
+  margin: 1.5rem 0;
+}
+label {
+  font-weight: 650;
+  font-size: 0.85rem;
+  margin-top: 0.6rem;
+}
+input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.75rem;
+  border: 1px solid #c9d6cc;
+  border-radius: 0.45rem;
+  background: white;
+}
+small {
+  font-size: 0.75rem;
+  color: #52665e;
+  line-height: 1.5;
+}
+small.erro-campo {
+  color: #a23220;
+}
+form .botao {
+  margin-top: 1rem;
+}
+.sucesso {
+  background: #e0f2e6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  color: #17633f;
+}
+.alternar {
+  font-size: 0.85rem;
+}
+.abas {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+.abas .ativa {
+  background: #087564;
+  color: white;
+}
+.lista {
+  display: grid;
+  gap: 1rem;
+}
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  border: 1px solid #dce5dc;
+  border-radius: 0.75rem;
+  padding: 1.2rem;
+}
+.item h2 {
+  font-size: 1.1rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.item p {
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+  overflow-wrap: anywhere;
+}
+.item .acoes {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+.indisponivel {
+  font-size: 0.75rem;
+  color: #8a4c1a;
+}
+.vazio {
+  padding: 2rem;
+  background: white;
+  border: 1px dashed #cbd8cf;
+  border-radius: 0.75rem;
+}
+@media (max-width: 650px) {
+  .conta {
+    padding: 1.5rem 1rem 2rem;
+  }
+  .item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .item .acoes {
+    flex-wrap: wrap;
+  }
+  form {
+    padding: 1rem;
+  }
+}

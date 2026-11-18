@@ -34,8 +34,14 @@ public class ClienteApi implements AutoCloseable {
     }
     public HttpResponse<String> get(String path) throws Exception { return enviar("GET", path, null); }
     public HttpResponse<String> enviar(String method, String path, Object body) throws Exception {
+        return enviar(method, path, body, true);
+    }
+    public HttpResponse<String> enviarSemCsrf(String method, String path, Object body) throws Exception {
+        return enviar(method, path, body, false);
+    }
+    private HttpResponse<String> enviar(String method, String path, Object body, boolean csrf) throws Exception {
         var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).timeout(Duration.ofSeconds(15));
-        if (!method.equals("GET")) { request.header(cabecalho, token); }
+        if (csrf && !method.equals("GET")) { request.header(cabecalho, token); }
         if (body != null) { request.header("Content-Type", "application/json"); }
         request.method(method, body == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)));
         return http.send(request.build(), HttpResponse.BodyHandlers.ofString());
