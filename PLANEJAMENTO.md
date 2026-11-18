@@ -277,3 +277,20 @@ Etapa 9: implementar importação CSV/XLSX com modelo de arquivo, limites, valid
 - Bootstrap anônimo validado contra a API real; dados preenchidos da revisão foram simulados somente no navegador. Nenhuma empresa/oferta/solicitação de demonstração inserida no banco local.
 - Execução local confirmada: V6 aplicada, saúde UP, frontend HTTP 200, solicitações presentes no OpenAPI e acesso sem login retorna 401. PostgreSQL saudável com `restart=no` preservado.
 - README e guias atualizados, incluindo `docs/PAINEL_DO_FORNECEDOR.md`. Nenhum push, publicação ou execução remota do pipeline realizado.
+
+## Dados demonstrativos completos — 18/11/2026
+
+- Por solicitação de Paulo, popular o banco local para explorar os fluxos já entregues, preservando registros existentes.
+- Estender somente o perfil explícito `demo`: manter o catálogo de 3 produtos/6 variantes e adicionar comprador, 5 fornecedores (3 aprovados, 1 pendente, 1 bloqueado), 20 ofertas (14 elegíveis), favoritos, fornecedores seguidos e uma solicitação pendente.
+- Usar IDs estáveis e inserções que não sobrescrevem alterações. Credenciais demonstrativas documentadas, com BCrypt; emails/telefones fictícios. Não criar administrador nem habilitar seed no perfil padrão.
+- Verificar idempotência, preservação de alterações e elegibilidade em PostgreSQL descartável antes de carregar o banco local. Reiniciar a API com perfil demo e confirmar busca, comparação, empates e login das contas de exemplo.
+- Revisar a interface com dados reais da carga, documentar acessos e registrar commit próprio. A próxima etapa funcional continua sendo importação CSV/XLSX.
+
+## Validação dos dados demonstrativos — 18/11/2026
+
+- Perfil `demo` ampliado com carga repetível de contas, fornecedores, ofertas e listas. Mantém somente inserções por IDs estáveis, sem sobrescrever registros existentes. Perfil padrão continua sem carga automática e nenhum administrador foi criado.
+- `mvnw.cmd -B -o verify`: BUILD SUCCESS, 114 testes, sem falhas/erros/ignorados. Os dois cenários novos verificam carga repetida, contas/hash, favoritos/seguidos, 14 ofertas elegíveis, empate e preservação de preço/estoque/nome editados.
+- Banco local inicialmente vazio, conforme contagem prévia. API reiniciada explicitamente com `-Dspring-boot.run.profiles=demo`; Flyway aplicou as cargas no schema correto. Contagens reais: 6 contas, 5 empresas, 3 produtos, 6 variantes, 20 ofertas, 14 elegíveis, 2 favoritos, 2 fornecedores seguidos e 1 solicitação pendente.
+- Revisão no Edge contra API/banco reais, sem interceptação: busca com 6 variantes; comparação com 3 fornecedores e 2 empates; filtro SP; login de comprador e fornecedores aprovado/pendente/bloqueado; favoritos mantidos após recarga; painel Paulista com 6 ofertas e perfil bloqueado sem edição. Nenhum dado comercial foi alterado durante a revisão.
+- Capturas de desktop/celular inspecionadas; PostgreSQL saudável, `restart=no` preservado. API permanece executando com perfil demo e interface disponível em http://127.0.0.1:4200.
+- Emails/telefones são fictícios; credenciais e roteiro estão em `docs/DADOS_DEMONSTRACAO.md`. README e guias corrigidos para refletir a carga completa. Frontend não foi alterado; seus 69 testes passaram na etapa anterior. Nenhum push ou publicação realizado.

@@ -140,7 +140,7 @@ npm.cmd run format:check
 npm.cmd run build
 ```
 
-Ainda não há testes de comportamento do frontend: serão adicionados junto aos fluxos funcionais. O pipeline executa os testes do backend com PostgreSQL isolado via Testcontainers e verifica formatação e build do frontend. O pipeline será executado no GitHub quando houver um remoto configurado e os commits forem enviados.
+O frontend possui testes de busca, conta e painel do fornecedor. Execute `npm.cmd test -- --watch=false`. O pipeline executa os testes do backend com PostgreSQL isolado via Testcontainers e verifica formatação, testes e build do frontend. O pipeline será executado no GitHub quando houver um remoto configurado e os commits forem enviados.
 
 ## Dados de demonstração
 
@@ -150,7 +150,9 @@ A carga demo fica separada das migrações de estrutura. Em um banco de desenvol
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=demo"
 ```
 
-Ela cria 2 categorias, 2 marcas, 3 produtos e 6 variantes com IDs estáveis. Ainda não há preços ou fornecedores nesta etapa. A API com perfil padrão aplica somente a estrutura. Desativar o perfil `demo` não apaga dados já carregados; mantenha um banco exclusivo para demonstração. O script pode ser reaplicado sem duplicar registros e não sobrescreve alterações em registros existentes.
+A carga completa cria 3 produtos, 6 variantes, 5 empresas e 20 ofertas, sendo 14 elegíveis para busca/comparação. Também inclui comprador, fornecedores aprovados/pendente/bloqueado, favoritos e solicitação de catálogo. Contas e roteiro em [docs/DADOS_DEMONSTRACAO.md](docs/DADOS_DEMONSTRACAO.md).
+
+A API com perfil padrão aplica somente a estrutura. Desativar `demo` não apaga dados carregados. Os scripts usam IDs estáveis e não sobrescrevem registros existentes; use apenas um banco dedicado de desenvolvimento/demonstração.
 
 ## Encerrar
 

@@ -36,7 +36,7 @@ Os valores usam BRL e os horários, o fuso do dispositivo. As ofertas não inclu
 
 ## Dados e verificação
 
-O perfil `demo` do backend carrega somente o catálogo, sem fornecedores/ofertas aprovados. Assim, ele também pode apresentar busca vazia. Não foram inseridas ofertas fictícias no banco de desenvolvimento para a interface.
+O perfil `demo` carrega catálogo, contas e ofertas para explorar os fluxos. A carga completa foi adicionada a pedido de Paulo após a etapa 8; veja [DADOS_DEMONSTRACAO.md](DADOS_DEMONSTRACAO.md). Bancos sem carga/ofertas elegíveis mostram busca vazia.
 
 No diretório `frontend`:
 

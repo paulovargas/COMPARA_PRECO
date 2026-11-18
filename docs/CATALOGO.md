@@ -37,6 +37,6 @@ IDs são UUIDs. Datas de criação usam `Instant` na aplicação e `timestamptz`
 
 ## Demonstração e validação
 
-O perfil `demo` adiciona a localização `db/demo` às migrações. O script repetível contém registros fictícios de catálogo, sem preços ou fornecedores. Os IDs são estáveis e a carga não atualiza dados existentes. Use um banco exclusivo para demonstração: nomes ou modelos já cadastrados com outros IDs podem entrar em conflito com as restrições do catálogo.
+O perfil `demo` adiciona a localização `db/demo` às migrações. Os scripts repetíveis contêm catálogo, contas, fornecedores e ofertas fictícios; veja `DADOS_DEMONSTRACAO.md`. Os IDs são estáveis e a carga não atualiza dados existentes. Use um banco exclusivo para demonstração: nomes ou modelos já cadastrados com outros IDs podem entrar em conflito com as restrições do catálogo.
 
 Os testes de persistência usam um PostgreSQL temporário com Testcontainers, independente do banco local. Cada cenário de catálogo é transacional e revertido. A carga demo é executada duas vezes dentro de uma transação de teste para verificar a reaplicação sem duplicação. O perfil padrão é verificado sem os registros demo.
