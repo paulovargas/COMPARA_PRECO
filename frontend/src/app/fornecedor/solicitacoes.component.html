@@ -1,0 +1,106 @@
+<h2>Solicitações de catálogo</h2>
+<p class="descricao">
+  Não encontrou o produto ou a variante? Envie os dados para análise. A inclusão será feita no
+  catálogo compartilhado pela administração, sem criar uma oferta automaticamente.
+</p>
+@if (erro()) {
+  <p class="aviso" role="alert">{{ erro() }}</p>
+}
+@if (sucesso()) {
+  <p class="sucesso" role="status">{{ sucesso() }}</p>
+}
+<form class="form-painel" [formGroup]="form" (ngSubmit)="enviar()" [attr.aria-busy]="ocupado()">
+  <fieldset [disabled]="!contexto.aprovado() || ocupado()">
+    <legend>Solicitar inclusão ou revisão de variante</legend>
+    <div class="campos">
+      <div>
+        <label for="nome-solicitado">Nome do produto</label
+        ><input id="nome-solicitado" formControlName="nomeProduto" maxlength="160" />
+      </div>
+      <div>
+        <label for="marca-solicitada">Marca</label
+        ><input id="marca-solicitada" formControlName="marca" maxlength="100" />
+      </div>
+      <div>
+        <label for="modelo-solicitado">Modelo</label
+        ><input id="modelo-solicitado" formControlName="modelo" maxlength="120" />
+      </div>
+      <div>
+        <label for="categoria-solicitada">Categoria</label
+        ><input id="categoria-solicitada" formControlName="categoria" maxlength="100" />
+      </div>
+      <div class="campo-inteiro">
+        <label for="caracteristicas-solicitadas">Características e detalhes</label
+        ><textarea
+          id="caracteristicas-solicitadas"
+          formControlName="caracteristicas"
+          maxlength="2000"
+          rows="4"
+          placeholder="Informe armazenamento, cor, condição, RAM, tamanho de tela e outras características. Para revisão, identifique o modelo e explique o que está faltando."
+        ></textarea
+        ><small>De 10 a 2000 caracteres. Até 10 solicitações pendentes por empresa.</small>
+      </div>
+    </div>
+    @if (form.touched && form.invalid) {
+      <p class="erro-campo" role="alert">
+        Preencha nome, marca, modelo e categoria com pelo menos 2 caracteres e descreva as
+        características com pelo menos 10.
+      </p>
+    }
+    <button class="botao principal" type="submit">
+      {{ ocupado() ? 'Enviando…' : 'Enviar solicitação' }}
+    </button>
+  </fieldset>
+</form>
+<h2>Histórico de solicitações</h2>
+@if (carregando()) {
+  <p role="status">Carregando solicitações…</p>
+}
+@if (erroLista()) {
+  <p class="aviso" role="alert">
+    {{ erroLista() }} <button class="link-botao" (click)="recarregar()">Tentar novamente</button>
+  </p>
+}
+@if (dados(); as paginaAtual) {
+  <div class="lista-painel">
+    @for (solicitacao of paginaAtual.itens; track solicitacao.id) {
+      <article class="cartao">
+        <h3>{{ solicitacao.nomeProduto }}</h3>
+        <p class="descricao">
+          {{ solicitacao.marca }} · {{ solicitacao.modelo }} · {{ solicitacao.categoria }}
+        </p>
+        <p>{{ solicitacao.caracteristicas }}</p>
+        <p class="metadados">
+          <span>{{
+            solicitacao.situacao === 'PENDENTE'
+              ? 'Aguardando análise'
+              : solicitacao.situacao === 'ATENDIDA'
+                ? 'Atendida'
+                : 'Recusada'
+          }}</span><span>{{ solicitacao.criadoEm | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </p>
+        @if (solicitacao.motivo) {
+          <p class="aviso">Resposta: {{ solicitacao.motivo }}</p>
+        }
+        @if (solicitacao.situacao === 'ATENDIDA' && solicitacao.varianteId) {
+          <a routerLink="/fornecedor/catalogo" [queryParams]="{ texto: solicitacao.modelo }"
+            >Consultar variante no catálogo</a
+          >
+        }
+      </article>
+    } @empty {
+      <div class="vazio">
+        <h3>Nenhuma solicitação nesta página</h3>
+        <p>Consulte o catálogo antes de solicitar uma inclusão.</p>
+        @if (paginaAtual.pagina > 0) {
+          <button class="link-botao" (click)="pagina(0)">Primeira página</button>
+        }
+      </div>
+    }
+  </div>
+  <app-paginacao
+    [pagina]="paginaAtual.pagina"
+    [totalPaginas]="paginaAtual.totalPaginas"
+    (mudar)="pagina($event)"
+  />
+}

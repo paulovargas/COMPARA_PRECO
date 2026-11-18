@@ -1,0 +1,101 @@
+<h2>{{ cadastro() ? 'Cadastre sua empresa' : 'Perfil da empresa' }}</h2>
+<p class="descricao">
+  {{
+    cadastro()
+      ? 'Informe os dados comerciais para solicitar sua participação. Após o cadastro, você precisará entrar novamente.'
+      : 'Mantenha os dados comerciais e o contato atualizados.'
+  }}
+</p>
+@if (erro()) {
+  <p class="aviso" role="alert">{{ erro() }}</p>
+}
+@if (sucesso()) {
+  <p class="sucesso" role="status">{{ sucesso() }}</p>
+}
+@if (contexto.empresa()?.situacao === 'APROVADO') {
+  <p class="aviso">
+    Alterar razão social ou nome fantasia exige nova aprovação e retira suas ofertas da busca até a
+    análise.
+  </p>
+}
+<form class="form-painel" [formGroup]="form" (ngSubmit)="salvar()" [attr.aria-busy]="ocupado()">
+  <fieldset [disabled]="!podeEditar() || ocupado()">
+    <legend>Dados comerciais</legend>
+    <div class="campos">
+      <div>
+        <label for="razao-social">Razão social</label
+        ><input
+          id="razao-social"
+          formControlName="razaoSocial"
+          maxlength="160"
+          autocomplete="organization"
+        />
+        @if (form.controls.razaoSocial.touched && form.controls.razaoSocial.invalid) {
+          <small class="erro-campo">Informe de 3 a 160 caracteres.</small>
+        }
+      </div>
+      <div>
+        <label for="nome-fantasia">Nome fantasia</label
+        ><input id="nome-fantasia" formControlName="nomeFantasia" maxlength="120" />
+        @if (form.controls.nomeFantasia.touched && form.controls.nomeFantasia.invalid) {
+          <small class="erro-campo">Informe de 3 a 120 caracteres.</small>
+        }
+      </div>
+      <div>
+        <label for="whatsapp">WhatsApp comercial</label
+        ><input
+          id="whatsapp"
+          formControlName="whatsapp"
+          type="tel"
+          autocomplete="tel"
+          placeholder="+55 (11) 99999-9999"
+          aria-describedby="ajuda-whatsapp"
+        /><small id="ajuda-whatsapp">Inclua o código do país e DDD.</small>
+        @if (form.controls.whatsapp.touched && form.controls.whatsapp.invalid) {
+          <small class="erro-campo">Informe um telefone válido com 10 a 15 dígitos.</small>
+        }
+      </div>
+      <div>
+        <label for="cidade-empresa">Cidade</label
+        ><input
+          id="cidade-empresa"
+          formControlName="cidade"
+          maxlength="100"
+          autocomplete="address-level2"
+        />
+        @if (form.controls.cidade.touched && form.controls.cidade.invalid) {
+          <small class="erro-campo">Informe a cidade com pelo menos 2 caracteres.</small>
+        }
+      </div>
+      <div>
+        <label for="estado-empresa">Estado</label
+        ><select id="estado-empresa" formControlName="estado" autocomplete="address-level1">
+          <option value="">Selecione</option>
+          @for (estado of estados; track estado) {
+            <option [value]="estado">{{ estado }}</option>
+          }
+        </select>
+        @if (form.controls.estado.touched && form.controls.estado.invalid) {
+          <small class="erro-campo">Selecione um estado.</small>
+        }
+      </div>
+      <div class="campo-inteiro">
+        <label for="descricao-empresa">Descrição (opcional)</label
+        ><textarea
+          id="descricao-empresa"
+          formControlName="descricao"
+          maxlength="2000"
+          rows="4"
+        ></textarea>
+      </div>
+    </div>
+    <button class="botao principal" type="submit" [disabled]="conflito()">
+      {{ ocupado() ? 'Salvando…' : cadastro() ? 'Cadastrar empresa' : 'Salvar dados' }}
+    </button>
+  </fieldset>
+</form>
+@if (!cadastro()) {
+  <button class="link-botao" [disabled]="ocupado() || contexto.carregando()" (click)="recarregar()">
+    Descartar edição e recarregar dados
+  </button>
+}

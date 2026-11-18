@@ -54,7 +54,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | 5 | API de busca, filtros, paginação e comparação; testes de equivalência, empates e ofertas inelegíveis | `feat: implementa busca e comparacao de precos` | Concluída |
 | 6 | Interface pública responsiva com categorias, busca, filtros e comparação conectadas à API; estados de carregamento, vazio e erro | `feat: cria experiencia de busca e comparacao` | Concluída |
 | 7 | Autenticação na interface, favoritos, fornecedores seguidos e WhatsApp; persistência por usuário | `feat: adiciona conta favoritos e contato` | Concluída |
-| 8 | Painel do fornecedor para empresa, catálogo, preços, estoque e disponibilidade | `feat: cria painel do fornecedor` | Pendente |
+| 8 | Painel do fornecedor para empresa, catálogo, preços, estoque e disponibilidade | `feat: cria painel do fornecedor` | Concluída |
 | 9 | CSV/XLSX com modelo de arquivo, limites, validação, prévia e confirmação; testes de arquivos inválidos e duplicidades | `feat: adiciona importacao de ofertas` | Pendente |
 | 10 | Painel administrativo com cadastros, moderação, bloqueio, permissões, estatísticas, relatórios e configurações | `feat: cria painel administrativo` | Pendente |
 | 11 | Fluxos integrados validados, documentação completa, configuração de produção, backup e roteiro de publicação | `docs: documenta validacao e publicacao` e correções específicas | Pendente |
@@ -88,7 +88,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 8: implementar painel do fornecedor, incluindo cadastro/perfil da empresa, catálogo de variantes e gerenciamento de ofertas, preços, estoque e disponibilidade. Detalhar o fluxo de solicitação de produto/variante ausente para a gestão do catálogo.
+Etapa 9: implementar importação CSV/XLSX com modelo de arquivo, limites, validação e prévia por linha, confirmação antes de persistir e regras explícitas para duplicidades/reimportação. A análise administrativa das solicitações de catálogo permanece na etapa 10.
 
 ## Registro da etapa 1 — 17/11/2026
 
@@ -255,3 +255,25 @@ Etapa 8: implementar painel do fornecedor, incluindo cadastro/perfil da empresa,
 - Revisão visual no Edge em 1440×1000 e 390×844: cadastro/login/logout, CSRF, favoritos/seguidos, retorno, recarga, contato e sessão expirada passaram. Lista e cadastro sem overflow horizontal no celular. Capturas locais revisadas; dados preenchidos foram simulados apenas nas respostas do navegador, sem criar contas/ofertas no banco e sem abrir WhatsApp.
 - Migração V5 aplicada com sucesso no banco local e API reiniciada após identificar a instância anterior deste projeto na porta 8080. Saúde UP, endpoints presentes no OpenAPI e lista sem autenticação retorna 401. PostgreSQL saudável e `restart=no` preservado.
 - README, guias de interface/autenticação/busca e `docs/CONTA_E_CONTATO.md` atualizados. Frontend disponível em http://127.0.0.1:4200. Pipeline remoto não executado; nenhum push ou publicação realizado.
+
+## Execução da etapa 8 — 18/11/2026
+
+- Criar painel Angular com cadastro/perfil da empresa, ofertas, catálogo de variantes e solicitações de inclusão. Compradores acessam o cadastro; fornecedores acessam as áreas próprias; administradores mantêm seu fluxo separado. A API continua aplicando autorização.
+- Cadastro de empresa invalida a sessão e encaminha ao novo login. Exibir situação/motivo, regras de reaprovação por identidade e estados de carregamento/erro. Perfil bloqueado somente em consulta.
+- Selecionar variante completa do catálogo, criar oferta e editar preço/estoque/disponibilidade. Excluir com confirmação na tela e versão atual. Informar moderação sem permitir edição pelo fornecedor. Validar moeda decimal e estoque inteiro sem arredondamento silencioso; conflitos preservam dados digitados e exigem recarga explícita.
+- Preservar texto/paginação na URL e cancelar consultas antigas. Manter versão recebida da API, feedback por operação e bloqueio de envio duplicado. Retirar o painel privado ao expirar a sessão.
+- Para variante ausente, implementar solicitação com nome, marca, modelo, categoria e características textuais, vinculada à empresa aprovada. Limitar a 10 pendentes por empresa, impedir duplicação pendente sob bloqueio transacional e listar somente solicitações próprias. A análise, criação/vinculação da variante e resposta administrativa serão implementadas na etapa 10; nenhum produto compartilhado é criado automaticamente.
+- Validar API nova em PostgreSQL descartável e testes Angular dos formulários, perfis, situações, ofertas, exclusão/conflito e solicitações. Executar formatação/build/testes, revisar desktop/celular no Edge e atualizar documentação antes do commit local.
+
+## Validação da etapa 8 — 18/11/2026
+
+- Painel acessível pelo cabeçalho: “Quero vender” para compradores e “Painel do fornecedor” para fornecedores. Rotas privadas de empresa, ofertas, catálogo e solicitações; guardas por perfil, com autorização também na API.
+- Cadastro da empresa exige novo login; perfil permite edição conforme a situação. Banner informa pendência/bloqueio/motivo. Alteração de identidade informa reaprovação; leitura de situação preserva campos já editados.
+- CRUD de ofertas conectado à API, com variante selecionada, validação de moeda/estoque, disponibilidade, moderação somente consultável, confirmação de exclusão e versões. Conflitos mantêm os dados digitados e impedem novo envio até recarga explícita. Consultas anteriores são canceladas ao paginar; expiração retira o painel privado da tela.
+- Migração V6 e API de solicitações implementadas. Fornecedor aprovado envia dados descritivos; empresa da sessão define o proprietário. Até 10 pendentes, sem duplicação pendente normalizada, protegidos por bloqueio transacional da empresa. Históricos isolados e paginados. Inclusão/vinculação de variante e resposta administrativa continuam na etapa 10; não há criação automática de produto/oferta.
+- Backend: `mvnw.cmd -B -o verify` passou com 112 testes, sem falhas/erros/ignorados. Os 9 cenários novos incluem isolamento, payload sem escolha de proprietário/situação, duplicidade, limites sob concorrência, aprovação, CSRF, validação e paginação. Os 103 testes anteriores continuam passando.
+- Frontend: `npm.cmd run format:check`, `npm.cmd test -- --watch=false` e `npm.cmd run build` passaram. São 69 testes, incluindo 25 cenários adicionais de cabeçalho/perfis, cadastro/relogin, aprovação/bloqueio, valores decimais, versões/conflito, confirmação de exclusão, cancelamento de consultas, catálogo e solicitações. Bundle inicial aproximadamente 304 kB, sem avisos de orçamento.
+- Edge revisado em 1440×1000 e 390×844: entrada pelo cabeçalho, cadastro/novo login, atualização de situação, variante incompleta, criação/validação/edição de oferta, conflito/recarga, exclusão confirmada, solicitação, bloqueio e expiração. Capturas inspecionadas; sem overflow horizontal nos formulários e histórico móveis.
+- Bootstrap anônimo validado contra a API real; dados preenchidos da revisão foram simulados somente no navegador. Nenhuma empresa/oferta/solicitação de demonstração inserida no banco local.
+- Execução local confirmada: V6 aplicada, saúde UP, frontend HTTP 200, solicitações presentes no OpenAPI e acesso sem login retorna 401. PostgreSQL saudável com `restart=no` preservado.
+- README e guias atualizados, incluindo `docs/PAINEL_DO_FORNECEDOR.md`. Nenhum push, publicação ou execução remota do pipeline realizado.

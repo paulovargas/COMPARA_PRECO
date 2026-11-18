@@ -1,6 +1,6 @@
 # Fornecedores e ofertas
 
-Esta entrega fornece a API de cadastro da empresa e gerenciamento das ofertas. A interface do fornecedor será implementada na etapa 8. O catálogo compartilhado continua separado das ofertas: cada fornecedor escolhe uma variante existente e cadastra seu preço, estoque e disponibilidade.
+A API de cadastro da empresa e gerenciamento das ofertas está conectada ao [painel do fornecedor](PAINEL_DO_FORNECEDOR.md). O catálogo compartilhado continua separado das ofertas: cada fornecedor escolhe uma variante existente e cadastra seu preço, estoque e disponibilidade.
 
 ## Fluxo inicial
 
@@ -106,11 +106,11 @@ Moderação de oferta: PENDENTE → APROVADA ou BLOQUEADA; APROVADA → BLOQUEAD
 
 Categorias definem se armazenamento, cor e determinadas chaves de atributos são obrigatórios. O catálogo devolve `completa` e `pendencias` para orientar a seleção. Criar ou aprovar uma oferta de variante incompleta retorna 409 `VARIANTE_INCOMPLETA`.
 
-As categorias demonstrativas de smartphones exigem armazenamento, cor e `ram_gb`; notebooks também exigem `tela_polegadas`. As regras podem ser configuradas por categoria; o CRUD administrativo do catálogo será entregue na etapa 10. Esta API do fornecedor consulta o catálogo central, sem alterar produtos compartilhados com outras empresas. O fluxo para solicitar inclusão de produto/variante ausente será detalhado com o painel e a gestão do catálogo nas etapas 8/10.
+As categorias demonstrativas de smartphones exigem armazenamento, cor e `ram_gb`; notebooks também exigem `tela_polegadas`. As regras podem ser configuradas por categoria; o CRUD administrativo do catálogo será entregue na etapa 10. Esta API do fornecedor consulta o catálogo central, sem alterar produtos compartilhados com outras empresas. O fornecedor pode enviar solicitações de inclusão/revisão pelo painel, com limite de 10 pendentes e histórico próprio. O atendimento administrativo será implementado na etapa 10.
 
 A view `compara_preco.oferta_elegivel` reúne somente ofertas com moderação APROVADA, disponíveis, com estoque positivo, empresa APROVADO, proprietário ativo com perfil FORNECEDOR e variante que ainda atende às exigências da categoria. Bloquear a empresa ou a conta, mudar o perfil ou tornar a variante incompleta retira a oferta desse conjunto imediatamente após a confirmação da alteração, sem reescrever preços ou aprovações anteriores.
 
-A etapa 5 usará essa mesma fonte para comparação, preço inicial e quantidade de ofertas. Ainda não há endpoints públicos de comparação nesta entrega.
+A busca e a comparação públicas usam essa mesma fonte para preços e contagens, conforme [BUSCA_E_COMPARACAO.md](BUSCA_E_COMPARACAO.md).
 
 ## Validação
 

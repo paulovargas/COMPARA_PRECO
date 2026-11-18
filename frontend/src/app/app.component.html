@@ -10,8 +10,13 @@
       <button class="link-botao" (click)="carregarSessao()">Tentar carregar conta</button>
     } @else if (auth.sessao.usuario(); as usuario) {
       <span class="nome-usuario">Olá, {{ usuario.nome }}</span
-      ><a routerLink="/minha-lista">Minha lista</a
-      ><button class="link-botao" [disabled]="saindo()" (click)="sair()">
+      ><a routerLink="/minha-lista">Minha lista</a>
+      @if (usuario.perfil !== 'ADMIN') {
+        <a routerLink="/fornecedor">{{
+          usuario.perfil === 'FORNECEDOR' ? 'Painel do fornecedor' : 'Quero vender'
+        }}</a>
+      }
+      <button class="link-botao" [disabled]="saindo()" (click)="sair()">
         {{ saindo() ? 'Saindo…' : 'Sair' }}
       </button>
     } @else {

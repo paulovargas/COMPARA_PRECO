@@ -4,7 +4,7 @@ Plataforma para buscar produtos, comparar ofertas equivalentes e entrar em conta
 
 ## Entrega atual
 
-API com catálogo, autenticação, permissões, fornecedores, moderação, ofertas e busca pública. A interface Angular permite buscar produtos, aplicar filtros, paginar resultados e comparar ofertas equivalentes, com destaque para todos os empates no menor preço. As telas são responsivas e conectadas à API, com cadastro/login/logout, produtos favoritos, fornecedores seguidos e contato WhatsApp. Painéis de fornecedor/administração e importação serão entregues nas próximas etapas.
+API com catálogo, autenticação, permissões, fornecedores, moderação, ofertas e busca pública. A interface Angular permite buscar produtos, aplicar filtros, paginar resultados e comparar ofertas equivalentes, com destaque para todos os empates no menor preço. As telas são responsivas e conectadas à API, com cadastro/login/logout, produtos favoritos, fornecedores seguidos e contato WhatsApp. O painel do fornecedor permite cadastrar a empresa, consultar variantes, gerenciar ofertas e solicitar inclusões no catálogo. Importação e administração completa serão entregues nas próximas etapas.
 
 Abra [http://127.0.0.1:4200](http://127.0.0.1:4200) após iniciar os serviços abaixo. A busca mostra apenas ofertas publicadas e elegíveis; um banco sem ofertas retorna o estado vazio, sem produtos fictícios. Veja o [guia da interface](docs/INTERFACE_PUBLICA.md).
 
@@ -171,3 +171,7 @@ A API oferece busca por variante, filtros e comparação de preços sem login. C
 ## Conta e contato
 
 Cadastre-se e entre pela interface para salvar produtos e seguir fornecedores em “Minha lista”. A comparação permite consultar o contato e abrir o WhatsApp. Contratos e regras em [docs/CONTA_E_CONTATO.md](docs/CONTA_E_CONTATO.md).
+
+## Painel do fornecedor
+
+Entre e use “Quero vender” para cadastrar a empresa. Após novo login, acompanhe a aprovação e gerencie seu catálogo de ofertas pelo “Painel do fornecedor”. Fluxo e contratos em [docs/PAINEL_DO_FORNECEDOR.md](docs/PAINEL_DO_FORNECEDOR.md).

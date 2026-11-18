@@ -21,7 +21,7 @@ export class SessaoStore {
   }
   expirar(): void {
     if (this.usuario())
-      this.aviso.set('Sua sessão expirou. Entre novamente para acessar sua lista.');
+      this.aviso.set('Sua sessão expirou. Entre novamente para acessar sua conta.');
     this.resolver(null);
   }
 }

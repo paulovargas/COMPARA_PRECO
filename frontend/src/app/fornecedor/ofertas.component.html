@@ -1,0 +1,118 @@
+<div class="titulo-cartao">
+  <div>
+    <h2>Minhas ofertas</h2>
+    <p class="descricao">Preços, estoque e disponibilidade das suas variantes.</p>
+  </div>
+  @if (contexto.aprovado()) {
+    <a class="botao principal" routerLink="/fornecedor/catalogo">Cadastrar oferta</a>
+  }
+</div>
+@if (sucesso()) {
+  <p class="sucesso" role="status">{{ sucesso() }}</p>
+}
+@if (erro()) {
+  <p class="aviso" role="alert">
+    {{ erro() }}
+    <button class="link-botao" [disabled]="excluindo()" (click)="recarregar()">
+      Descartar edição e recarregar
+    </button>
+  </p>
+}
+@if (editando(); as oferta) {
+  <app-oferta-editor [oferta]="oferta" (salva)="salva()" (cancelar)="recarregar()" />
+}
+@if (carregando()) {
+  <p role="status">Carregando ofertas…</p>
+}
+@if (dados(); as paginaAtual) {
+  <p class="descricao" role="status">
+    {{ paginaAtual.totalElementos }}
+    {{ paginaAtual.totalElementos === 1 ? 'oferta cadastrada' : 'ofertas cadastradas' }}
+  </p>
+  <div class="lista-painel">
+    @for (oferta of paginaAtual.itens; track oferta.id) {
+      <article class="cartao">
+        <div class="titulo-cartao">
+          <div>
+            <h3>{{ oferta.variante.nomeProduto }}</h3>
+            <p class="descricao">{{ oferta.variante.marca }} · {{ oferta.variante.modelo }}</p>
+          </div>
+          <span class="preco">{{
+            oferta.preco | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
+          }}</span>
+        </div>
+        <app-caracteristicas [variante]="oferta.variante" />
+        <p class="metadados">
+          <span>Estoque: {{ oferta.estoque }}</span
+          ><span>{{ oferta.disponivel ? 'Disponível' : 'Indisponível' }}</span
+          ><span>{{
+            oferta.moderacao === 'PENDENTE'
+              ? 'Aguardando moderação'
+              : oferta.moderacao === 'APROVADA'
+                ? 'Oferta aprovada'
+                : 'Oferta bloqueada'
+          }}</span>
+        </p>
+        @if (oferta.motivoModeracao) {
+          <p class="aviso">Motivo: {{ oferta.motivoModeracao }}</p>
+        }
+        <p class="descricao">Atualizada em {{ oferta.atualizadoEm | date: 'dd/MM/yyyy HH:mm' }}</p>
+        @if (contexto.aprovado()) {
+          <div class="acoes">
+            <button
+              class="botao"
+              [disabled]="!!editando() || !!exclusao() || excluindo()"
+              (click)="editando.set(oferta)"
+            >
+              Editar oferta</button
+            ><button
+              class="botao perigo"
+              [disabled]="!!editando() || !!exclusao() || excluindo()"
+              (click)="exclusao.set(oferta)"
+            >
+              Excluir oferta
+            </button>
+          </div>
+        }
+        @if (exclusao()?.id === oferta.id) {
+          <div class="confirmacao" role="group" aria-label="Confirmar exclusão">
+            <p>
+              Excluir a oferta de {{ oferta.variante.nomeProduto }}? Ela será removida do seu painel
+              e dos resultados públicos.
+            </p>
+            <div class="acoes">
+              <button
+                class="botao perigo"
+                [disabled]="excluindo() || conflitoExclusao() || !contexto.aprovado()"
+                (click)="confirmarExclusao()"
+              >
+                {{ excluindo() ? 'Excluindo…' : 'Confirmar exclusão' }}</button><button
+                class="botao"
+                [disabled]="excluindo()"
+                (click)="exclusao.set(null)"
+              >
+                Cancelar exclusão
+              </button>
+            </div>
+          </div>
+        }
+      </article>
+    } @empty {
+      <div class="vazio">
+        <h3>Nenhuma oferta nesta página</h3>
+        <p>Encontre uma variante completa no catálogo para cadastrar sua oferta.</p>
+        <a routerLink="/fornecedor/catalogo">Consultar catálogo</a>
+        @if (paginaAtual.pagina > 0) {
+          <button class="link-botao" (click)="pagina(0)">Primeira página</button>
+        }
+      </div>
+    }
+  </div>
+  @if (!editando() && !exclusao()) {
+    <app-paginacao
+      [pagina]="paginaAtual.pagina"
+      [totalPaginas]="paginaAtual.totalPaginas"
+      (mudar)="pagina($event)"
+    />
+  }
+}

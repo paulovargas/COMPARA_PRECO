@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { fornecedorGuard } from './fornecedor/fornecedor.guard';
 import { contaGuard } from './conta/conta.guard';
 
 export const routes: Routes = [
@@ -30,6 +31,44 @@ export const routes: Routes = [
     canActivate: [contaGuard],
     loadComponent: () => import('./conta/minha-lista.component').then((m) => m.MinhaListaComponent),
     title: 'Minha lista | Compara Preço',
+  },
+  {
+    path: 'fornecedor',
+    canActivate: [fornecedorGuard],
+    canActivateChild: [fornecedorGuard],
+    loadComponent: () =>
+      import('./fornecedor/fornecedor-shell.component').then((m) => m.FornecedorShellComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./fornecedor/empresa.component').then((m) => m.EmpresaComponent),
+        title: 'Minha empresa | Compara Preço',
+      },
+      {
+        path: 'ofertas',
+        data: { exigeFornecedor: true },
+        loadComponent: () =>
+          import('./fornecedor/ofertas.component').then((m) => m.OfertasComponent),
+        title: 'Minhas ofertas | Compara Preço',
+      },
+      {
+        path: 'catalogo',
+        data: { exigeFornecedor: true },
+        loadComponent: () =>
+          import('./fornecedor/catalogo-fornecedor.component').then(
+            (m) => m.CatalogoFornecedorComponent,
+          ),
+        title: 'Catálogo do fornecedor | Compara Preço',
+      },
+      {
+        path: 'solicitacoes',
+        data: { exigeFornecedor: true },
+        loadComponent: () =>
+          import('./fornecedor/solicitacoes.component').then((m) => m.SolicitacoesComponent),
+        title: 'Solicitações de catálogo | Compara Preço',
+      },
+    ],
   },
   { path: '**', redirectTo: '' },
 ];

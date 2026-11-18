@@ -539,6 +539,87 @@ class FornecedorOfertaIntegrationTest extends PostgresIntegrationTest {
         }
     }
 
+    @Test
+    void deveSolicitarCatalogoSomenteParaEmpresaDaSessaoSemCriarProdutoAutomaticamente() throws Exception {
+        long totalProdutos = produtos.count();
+        try (var a = cliente(donoA); var b = cliente(donoB)) {
+            var dados = dadosSolicitacao("Modelo novo"); dados.put("fornecedorId", empresaB.getId()); dados.put("situacao", "ATENDIDA");
+            var criada = sucesso(a, a.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", dados), 201);
+            assertThat(criada.get("situacao").asText()).isEqualTo("PENDENTE");
+            assertThat(criada.get("varianteId").isNull()).isTrue();
+            assertThat(produtos.count()).isEqualTo(totalProdutos);
+            assertThat(jdbc.queryForObject("SELECT fornecedor_id FROM compara_preco.solicitacao_catalogo WHERE id=?", UUID.class,
+                    UUID.fromString(criada.get("id").asText()))).isEqualTo(empresaA.getId());
+            assertThat(sucesso(a, a.get("/api/fornecedor/catalogo/solicitacoes"), 200).get("totalElementos").asInt()).isEqualTo(1);
+            assertThat(sucesso(b, b.get("/api/fornecedor/catalogo/solicitacoes"), 200).get("totalElementos").asInt()).isZero();
+        }
+    }
+
+    @Test
+    void deveRecusarSolicitacaoPendenteDuplicadaNormalizadaEPermitirOutraEmpresa() throws Exception {
+        try (var a = cliente(donoA); var b = cliente(donoB)) {
+            assertThat(a.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", dadosSolicitacao("Modelo novo")).statusCode()).isEqualTo(201);
+            var repetida = dadosSolicitacao("  MODELO   NOVO ");
+            var resposta = a.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", repetida);
+            assertThat(resposta.statusCode()).isEqualTo(409);
+            assertThat(a.json(resposta).get("codigo").asText()).isEqualTo("SOLICITACAO_DUPLICADA");
+            assertThat(b.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", repetida).statusCode()).isEqualTo(201);
+        }
+    }
+
+    @Test
+    void deveAplicarLimiteDeSolicitacoesMesmoComEnviosSimultaneos() throws Exception {
+        try (var a = cliente(donoA); var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
+            for (int i=0; i<9; i++) {
+                assertThat(a.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", dadosSolicitacao("Modelo " + i)).statusCode()).isEqualTo(201);
+            }
+            var primeira = executor.submit(() -> a.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", dadosSolicitacao("Modelo A")).statusCode());
+            var segunda = executor.submit(() -> a.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", dadosSolicitacao("Modelo B")).statusCode());
+            assertThat(java.util.List.of(primeira.get(), segunda.get())).containsExactlyInAnyOrder(201, 409);
+            assertThat(sucesso(a, a.get("/api/fornecedor/catalogo/solicitacoes?tamanho=3&pagina=1"), 200).get("totalElementos").asInt()).isEqualTo(10);
+        }
+    }
+
+    @Test
+    void deveExigirPerfilAprovacaoECsrfParaSolicitarCatalogo() throws Exception {
+        var comprador = usuario("solicitacao-comprador@teste.local", Perfil.COMPRADOR);
+        try (var a = cliente(donoA); var comum = cliente(comprador)) {
+            assertThat(comum.get("/api/fornecedor/catalogo/solicitacoes").statusCode()).isEqualTo(403);
+            assertThat(a.enviarSemCsrf("POST", "/api/fornecedor/catalogo/solicitacoes", dadosSolicitacao("Modelo novo")).statusCode()).isEqualTo(403);
+            jdbc.update("UPDATE compara_preco.fornecedor SET situacao='PENDENTE' WHERE id=?", empresaA.getId());
+            assertThat(a.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", dadosSolicitacao("Modelo novo")).statusCode()).isEqualTo(409);
+            jdbc.update("UPDATE compara_preco.fornecedor SET situacao='BLOQUEADO', motivo_moderacao='Revisão' WHERE id=?", empresaA.getId());
+            assertThat(a.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", dadosSolicitacao("Modelo novo")).statusCode()).isEqualTo(403);
+            assertThat(a.get("/api/fornecedor/catalogo/solicitacoes").statusCode()).isEqualTo(200);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings={"pagina=-1", "pagina=1000001", "tamanho=0", "tamanho=51"})
+    void deveValidarPaginacaoDasSolicitacoes(String filtro) throws Exception {
+        try (var a = cliente(donoA)) {
+            assertThat(a.get("/api/fornecedor/catalogo/solicitacoes?" + filtro).statusCode()).isEqualTo(400);
+        }
+    }
+
+    @Test
+    void deveValidarCamposDaSolicitacaoAntesDePersistir() throws Exception {
+        try (var a = cliente(donoA)) {
+            for (String campo : new String[]{"nomeProduto", "marca", "modelo", "categoria", "caracteristicas"}) {
+                var dados = dadosSolicitacao("Modelo novo"); dados.put(campo, " ");
+                assertThat(a.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", dados).statusCode()).isEqualTo(400);
+            }
+            var dados = dadosSolicitacao("Modelo novo"); dados.put("caracteristicas", "Detalhes com nulo" + (char) 0);
+            assertThat(a.enviar("POST", "/api/fornecedor/catalogo/solicitacoes", dados).statusCode()).isEqualTo(400);
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM compara_preco.solicitacao_catalogo", Integer.class)).isZero();
+        }
+    }
+
+    private Map<String, Object> dadosSolicitacao(String modelo) {
+        return new HashMap<>(Map.of("nomeProduto", "Produto solicitado", "marca", "Marca nova", "modelo", modelo,
+                "categoria", "Smartphones", "caracteristicas", "256 GB, preto, novo, RAM 8 GB"));
+    }
+
     private Usuario usuario(String email, Perfil perfil) { return usuarios.saveAndFlush(new Usuario("Pessoa de teste", email, hash, perfil)); }
     private Fornecedor empresa(Usuario dono, String nome) {
         var empresa = new Fornecedor(dono, nome + " Ltda", nome, "Descrição", "5511999999999", "São Paulo", UnidadeFederativa.SP);

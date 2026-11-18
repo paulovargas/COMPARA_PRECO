@@ -1,0 +1,231 @@
+.painel {
+  max-width: 1200px;
+  margin: auto;
+  padding: 2.5rem 1.5rem 4rem;
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    letter-spacing: -0.04em;
+    margin: 0.5rem 0 1.5rem;
+  }
+  h2 {
+    font-size: 1.35rem;
+    margin: 1.5rem 0 0.75rem;
+  }
+  h3 {
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+    margin: 0 0 0.6rem;
+  }
+  p {
+    line-height: 1.6;
+  }
+  .eyebrow {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #087564;
+    font-weight: 700;
+    margin-top: 2rem;
+  }
+  .descricao,
+  small,
+  .metadados {
+    color: #52665e;
+    font-size: 0.85rem;
+  }
+  .abas,
+  .situacao,
+  .acoes {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .abas {
+    border-bottom: 1px solid #dce5dc;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .abas a {
+    padding: 0.6rem 0.8rem;
+    text-decoration: none;
+    border-radius: 0.45rem;
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+  .abas .ativa {
+    background: #087564;
+    color: white;
+  }
+  .situacao {
+    background: #e7f0e8;
+    border-radius: 0.6rem;
+    padding: 1rem;
+    font-size: 0.85rem;
+  }
+  .situacao strong {
+    overflow-wrap: anywhere;
+  }
+  .situacao span {
+    margin-right: auto;
+  }
+  .aviso span {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+  .form-painel,
+  .cartao {
+    background: white;
+    border: 1px solid #dce5dc;
+    border-radius: 0.8rem;
+    padding: 1.25rem;
+    margin: 1rem 0;
+  }
+  .campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .campos > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .campo-inteiro {
+    grid-column: 1 / -1;
+  }
+  label {
+    font-size: 0.85rem;
+    font-weight: 650;
+  }
+  input:not([type='checkbox']),
+  select,
+  textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.7rem;
+    border: 1px solid #c9d6cc;
+    border-radius: 0.45rem;
+    font: inherit;
+    font-size: 0.9rem;
+    background: white;
+    color: #172b29;
+  }
+  textarea {
+    resize: vertical;
+  }
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+  legend {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  small {
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  .erro-campo {
+    color: #a23220;
+  }
+  .sucesso {
+    background: #e0f2e6;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    color: #17633f;
+  }
+  .busca-painel {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: end;
+    margin: 1.5rem 0;
+  }
+  .busca-painel > div {
+    flex: 1;
+    min-width: 180px;
+  }
+  .busca-painel label {
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .lista-painel {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .titulo-cartao {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .preco {
+    font-size: 1.3rem;
+    font-weight: 750;
+    color: #153f32;
+  }
+  .metadados {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .confirmacao {
+    padding: 1rem;
+    border: 1px solid #d58e7d;
+    background: #fff8f5;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+  }
+  .botao.perigo {
+    color: #a23220;
+    border-color: #cc9f91;
+  }
+  .vazio {
+    background: white;
+    border: 1px dashed #cbd8cf;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    margin: 1rem 0;
+  }
+  .checkbox {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    min-height: 44px;
+  }
+  input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+  }
+  [disabled] {
+    cursor: default;
+  }
+  @media (max-width: 600px) {
+    padding: 1.5rem 1rem 2rem;
+    .campos {
+      grid-template-columns: 1fr;
+    }
+    .cartao,
+    .form-painel {
+      padding: 1rem;
+    }
+    .situacao {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .acoes {
+      align-items: stretch;
+    }
+    .acoes .botao {
+      flex-grow: 1;
+    }
+  }
+}

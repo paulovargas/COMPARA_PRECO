@@ -1,0 +1,67 @@
+<h2>Catálogo de variantes</h2>
+<p class="descricao">
+  Escolha as mesmas características do produto que você vende. Cada variante tem sua própria oferta.
+</p>
+<form class="busca-painel" [formGroup]="form" (ngSubmit)="buscar()">
+  <div>
+    <label for="texto-catalogo">Produto, marca ou modelo</label
+    ><input id="texto-catalogo" type="search" formControlName="texto" maxlength="100" />
+  </div>
+  <button class="botao principal" type="submit">Pesquisar variantes</button>
+</form>
+<p>
+  <a routerLink="/fornecedor/solicitacoes"
+    >Não encontrou o produto ou a variante? Solicitar inclusão</a
+  >
+</p>
+@if (erro()) {
+  <p class="aviso" role="alert">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando catálogo…</p>
+}
+@if (selecionada(); as variante) {
+  <app-oferta-editor [variante]="variante" (salva)="criada()" (cancelar)="selecionada.set(null)" />
+}
+@if (dados(); as paginaAtual) {
+  <p class="descricao" role="status">{{ paginaAtual.totalElementos }} variantes no catálogo</p>
+  <div class="lista-painel">
+    @for (variante of paginaAtual.itens; track variante.id) {
+      <article class="cartao">
+        <h3>{{ variante.nomeProduto }}</h3>
+        <p class="descricao">
+          {{ variante.marca }} · {{ variante.modelo }} · {{ variante.categoria }}
+        </p>
+        <app-caracteristicas [variante]="variante" />
+        @if (!variante.completa) {
+          <p class="aviso">
+            Esta variante ainda não tem todas as características obrigatórias. Solicite a revisão do
+            catálogo antes de cadastrar uma oferta.
+          </p>
+        }
+        <button
+          class="botao"
+          [disabled]="!variante.completa || !contexto.aprovado() || !!selecionada()"
+          (click)="selecionada.set(variante)"
+        >
+          Selecionar variante
+        </button>
+      </article>
+    } @empty {
+      <div class="vazio">
+        <h3>Nenhuma variante encontrada</h3>
+        <p>Tente outro termo ou solicite a inclusão do produto com suas características.</p>
+        @if (paginaAtual.pagina > 0) {
+          <button class="link-botao" (click)="pagina(0)">Primeira página</button>
+        }
+      </div>
+    }
+  </div>
+  @if (!selecionada()) {
+    <app-paginacao
+      [pagina]="paginaAtual.pagina"
+      [totalPaginas]="paginaAtual.totalPaginas"
+      (mudar)="pagina($event)"
+    />
+  }
+}
