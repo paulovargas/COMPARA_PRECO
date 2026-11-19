@@ -36,6 +36,16 @@ public class Produto extends EntidadeCatalogo {
 
     protected Produto() {}
 
+    public void atualizar(Categoria categoria, Marca marca, String nome, String modelo, String descricao, String imagemUrl) {
+        var validado = new Produto(categoria, marca, nome, modelo, descricao, imagemUrl);
+        this.categoria = validado.categoria;
+        this.marca = validado.marca;
+        this.nome = validado.nome;
+        this.modelo = validado.modelo;
+        this.descricao = validado.descricao;
+        this.imagemUrl = validado.imagemUrl;
+    }
+
     public Produto(Categoria categoria, Marca marca, String nome, String modelo) {
         this(categoria, marca, nome, modelo, null, null);
     }

@@ -78,12 +78,14 @@ public class ImportacaoService {
         }
         if (!disponivel.equals("true") && !disponivel.equals("false")) { erros.add("Disponibilidade deve ser true ou false."); }
         VarianteResponse variante = null;
+        Long versaoVariante = null;
         Oferta oferta = null;
         if (id != null) {
             var entidade = variantes.findDetalhadaById(id).orElse(null);
             if (entidade == null) { erros.add("Variante não encontrada no catálogo."); }
             else {
                 variante = VarianteResponse.de(entidade);
+                versaoVariante = entidade.getVersao();
                 if (!variante.completa()) { erros.add("Variante incompleta. Solicite revisão do catálogo."); }
                 oferta = ofertas.findByFornecedorIdAndVarianteId(empresaId, id).orElse(null);
             }
@@ -93,7 +95,7 @@ public class ImportacaoService {
             acao = oferta == null ? "CRIAR" : iguais(oferta, valor, Integer.parseInt(estoque), Boolean.parseBoolean(disponivel)) ? "IGNORAR" : "ATUALIZAR";
         }
         return new LinhaImportacao(numero, codigo, preco, estoque, disponivel, variante, acao,
-                oferta == null ? null : oferta.getId(), oferta == null ? null : oferta.getVersao(), List.copyOf(erros));
+                oferta == null ? null : oferta.getId(), oferta == null ? null : oferta.getVersao(), versaoVariante, List.copyOf(erros));
     }
 
     @Transactional(readOnly = true)
@@ -109,7 +111,8 @@ public class ImportacaoService {
         if (previa.situacao().equals("APLICADA")) { return previa; }
         if (previa.invalidas() > 0) { throw new ErroNegocioException(409, "IMPORTACAO_INVALIDA", "Corrija as linhas e envie uma nova prévia antes de confirmar."); }
         for (var linha : previa.linhas()) {
-            var variante = variantes.findDetalhadaById(UUID.fromString(linha.varianteId())).orElseThrow(ImportacaoService::conflito);
+            var variante = variantes.buscarParaOferta(UUID.fromString(linha.varianteId())).orElseThrow(ImportacaoService::conflito);
+            if (linha.versaoVariante() == null || variante.getVersao() != linha.versaoVariante()) { throw conflito(); }
             ValidacaoVarianteOferta.exigirCompleta(variante);
             var atual = ofertas.findByFornecedorIdAndVarianteId(empresa.getId(), variante.getId()).orElse(null);
             if (linha.ofertaId() == null) {

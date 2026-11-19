@@ -28,6 +28,14 @@ public class Categoria extends EntidadeCatalogo {
 
     protected Categoria() {}
 
+    public void atualizar(String nome, boolean exigeArmazenamento, boolean exigeCor, Set<String> atributosObrigatorios) {
+        var validado = new Categoria(nome, exigeArmazenamento, exigeCor, atributosObrigatorios);
+        this.nome = validado.nome;
+        this.exigeArmazenamento = validado.exigeArmazenamento;
+        this.exigeCor = validado.exigeCor;
+        this.atributosObrigatorios = validado.atributosObrigatorios;
+    }
+
     public Categoria(String nome) {
         this(nome, false, false, Set.of());
     }

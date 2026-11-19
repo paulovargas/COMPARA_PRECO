@@ -39,6 +39,15 @@ public class VarianteProduto extends EntidadeCatalogo {
 
     protected VarianteProduto() {}
 
+    public void atualizar(Produto produto, Integer armazenamentoGb, String cor, CondicaoProduto condicao, Map<String, String> atributos) {
+        var validado = new VarianteProduto(produto, armazenamentoGb, cor, condicao, atributos);
+        this.produto = validado.produto;
+        this.armazenamentoGb = validado.armazenamentoGb;
+        this.cor = validado.cor;
+        this.condicao = validado.condicao;
+        this.atributos = validado.atributos;
+    }
+
     public VarianteProduto(Produto produto, Integer armazenamentoGb, String cor,
                            CondicaoProduto condicao, Map<String, String> atributos) {
         this.produto = Objects.requireNonNull(produto, "Produto é obrigatório.");

@@ -33,7 +33,7 @@ public class OfertaService {
     @Transactional
     public OfertaResponse criar(UUID usuarioId, CriarOfertaRequest request) {
         var fornecedor = fornecedores.buscarAprovadoParaOperacao(usuarioId);
-        var variante = variantes.findDetalhadaById(request.varianteId()).orElseThrow(() ->
+        var variante = variantes.buscarParaOferta(request.varianteId()).orElseThrow(() ->
                 new ErroNegocioException(404, "VARIANTE_NAO_ENCONTRADA", "Variante não encontrada."));
         ValidacaoVarianteOferta.exigirCompleta(variante);
         if (ofertas.existsByFornecedorIdAndVarianteId(fornecedor.getId(), variante.getId())) {

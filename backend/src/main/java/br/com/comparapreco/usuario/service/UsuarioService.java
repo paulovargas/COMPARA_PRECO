@@ -25,13 +25,15 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final SessaoService sessoes;
     private final Validator validator;
+    private final PermissoesService permissoes;
 
     public UsuarioService(UsuarioRepository usuarios, PasswordEncoder passwordEncoder,
-                          SessaoService sessoes, Validator validator) {
+                          SessaoService sessoes, Validator validator, PermissoesService permissoes) {
         this.usuarios = usuarios;
         this.passwordEncoder = passwordEncoder;
         this.sessoes = sessoes;
         this.validator = validator;
+        this.permissoes = permissoes;
     }
 
     @Transactional
@@ -72,7 +74,7 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public PaginaResponse<UsuarioResponse> listar(int pagina, int tamanho) {
-        if (pagina < 0 || tamanho < 1 || tamanho > 50) {
+        if (pagina < 0 || pagina > 1000000 || tamanho < 1 || tamanho > 50) {
             throw new ErroNegocioException(400, "PAGINACAO_INVALIDA", "Página inválida ou tamanho fora do intervalo de 1 a 50.");
         }
         return PaginaResponse.de(usuarios.findAll(PageRequest.of(pagina, tamanho,
@@ -81,14 +83,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponse alterarSituacao(UUID id, boolean ativo, UUID administrador) {
-        if (!ativo && id.equals(administrador)) {
-            throw new ErroNegocioException(409, "AUTOBLOQUEIO_PROIBIDO", "Você não pode bloquear a própria conta.");
-        }
-        Usuario usuario = buscar(id);
-        usuario.alterarSituacao(ativo);
-        usuarios.flush();
-        sessoes.invalidarDoUsuario(usuario.getEmail());
-        return UsuarioResponse.de(usuario);
+        return permissoes.alterar(id, ativo, null, null, administrador);
     }
 
     private Usuario buscar(UUID id) {

@@ -55,6 +55,9 @@ public class Usuario {
         this.ativo = ativo;
     }
 
+    public long getVersao() { return versao; }
+    public void alterarPerfil(Perfil perfil) { this.perfil = java.util.Objects.requireNonNull(perfil); }
+
     public UUID getId() {
         return id;
     }

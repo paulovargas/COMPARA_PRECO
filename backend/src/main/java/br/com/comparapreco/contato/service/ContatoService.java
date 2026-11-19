@@ -15,14 +15,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class ContatoService {
     private final ContatoRepository contatos;
     private final OfertaRepository ofertas;
-    public ContatoService(ContatoRepository contatos, OfertaRepository ofertas) { this.contatos = contatos; this.ofertas = ofertas; }
+    private final br.com.comparapreco.administracao.repository.PainelAdminRepository configuracoes;
+    public ContatoService(ContatoRepository contatos, OfertaRepository ofertas, br.com.comparapreco.administracao.repository.PainelAdminRepository configuracoes) { this.contatos = contatos; this.ofertas = ofertas; this.configuracoes = configuracoes; }
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public ContatoResponse consultar(UUID id) {
         if (!contatos.elegivel(id)) { throw new ErroNegocioException(404, "CONTATO_INDISPONIVEL", "Esta oferta não está mais disponível para contato."); }
         var oferta = ofertas.findById(id).orElseThrow();
         var v = oferta.getVariante();
         var p = v.getProduto();
-        var mensagem = new StringBuilder("Olá! Encontrei sua oferta no Compara Preço e tenho interesse em ")
+        var mensagem = new StringBuilder(configuracoes.configuracao().aberturaContato()).append(" ")
                 .append(p.getNome()).append(" — ").append(p.getMarca().getNome()).append(" / ").append(p.getModelo())
                 .append(". Condição: ").append(v.getCondicao());
         if (v.getArmazenamentoGb() != null) { mensagem.append(". Armazenamento: ").append(v.getArmazenamentoGb()).append(" GB"); }

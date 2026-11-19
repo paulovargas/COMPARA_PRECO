@@ -12,6 +12,16 @@ import br.com.comparapreco.catalogo.entity.VarianteProduto;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface VarianteProdutoRepository extends JpaRepository<VarianteProduto, UUID> {
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"produto.marca", "produto.categoria"})
+    org.springframework.data.domain.Page<VarianteProduto> findAll(org.springframework.data.domain.Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_READ)
+    @Query("select v from VarianteProduto v where v.id = :id")
+    Optional<VarianteProduto> buscarParaOferta(UUID id);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select v from VarianteProduto v where v.id = :id")
+    Optional<VarianteProduto> buscarParaEdicao(UUID id);
+
     @EntityGraph(attributePaths = {"produto.marca", "produto.categoria"})
     List<VarianteProduto> findAllByIdIn(Collection<UUID> ids);
 

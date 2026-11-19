@@ -14,6 +14,11 @@ public class Marca extends EntidadeCatalogo {
 
     protected Marca() {}
 
+    public void atualizar(String nome) {
+        var validado = new Marca(nome);
+        this.nome = validado.nome;
+    }
+
     public Marca(String nome) {
         this.nome = TextoCatalogo.obrigatorio(nome, "Nome", 100);
     }

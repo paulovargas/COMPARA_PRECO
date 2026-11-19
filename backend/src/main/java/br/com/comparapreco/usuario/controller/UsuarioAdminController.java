@@ -3,7 +3,9 @@ package br.com.comparapreco.usuario.controller;
 import java.util.UUID;
 import br.com.comparapreco.autenticacao.security.UsuarioSessao;
 import br.com.comparapreco.shared.dto.PaginaResponse;
+import br.com.comparapreco.usuario.dto.AcessoUsuarioRequest;
 import br.com.comparapreco.usuario.dto.SituacaoUsuarioRequest;
+import br.com.comparapreco.usuario.service.PermissoesService;
 import br.com.comparapreco.usuario.dto.UsuarioResponse;
 import br.com.comparapreco.usuario.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,9 +27,18 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasRole('ADMIN')")
 public class UsuarioAdminController {
     private final UsuarioService usuarios;
+    private final PermissoesService permissoes;
 
-    public UsuarioAdminController(UsuarioService usuarios) {
+    public UsuarioAdminController(UsuarioService usuarios, PermissoesService permissoes) {
         this.usuarios = usuarios;
+        this.permissoes = permissoes;
+    }
+
+    @PutMapping("/{id}/acesso")
+    @Operation(security = @SecurityRequirement(name = "csrf"))
+    public UsuarioResponse alterarAcesso(@PathVariable UUID id, @Valid @RequestBody AcessoUsuarioRequest request,
+            @AuthenticationPrincipal UsuarioSessao administrador) {
+        return permissoes.alterar(id, request.ativo(), request.perfil(), request.versao(), administrador.id());
     }
 
     @GetMapping

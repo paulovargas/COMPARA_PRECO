@@ -56,7 +56,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | 7 | Autenticação na interface, favoritos, fornecedores seguidos e WhatsApp; persistência por usuário | `feat: adiciona conta favoritos e contato` | Concluída |
 | 8 | Painel do fornecedor para empresa, catálogo, preços, estoque e disponibilidade | `feat: cria painel do fornecedor` | Concluída |
 | 9 | CSV/XLSX com modelo de arquivo, limites, validação, prévia e confirmação; testes de arquivos inválidos e duplicidades | `feat: adiciona importacao de ofertas` | Concluída |
-| 10 | Painel administrativo com cadastros, moderação, bloqueio, permissões, estatísticas, relatórios e configurações | `feat: cria painel administrativo` | Pendente |
+| 10 | Painel administrativo com cadastros, moderação, bloqueio, permissões, estatísticas, relatórios e configurações | `feat: cria painel administrativo` | Em execução: APIs validadas |
 | 11 | Fluxos integrados validados, documentação completa, configuração de produção, backup e roteiro de publicação | `docs: documenta validacao e publicacao` e correções específicas | Pendente |
 
 Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofertas sustentam comparação; o fluxo de comparação deve funcionar antes dos painéis completos. Importação depende das regras de variante e oferta já testadas.
@@ -316,3 +316,23 @@ Etapa 10: implementar painel administrativo com catálogo completo, moderação,
 - API iniciada com perfil demo, V7 aplicada e saúde UP. Conta demo Paulista validada na interface contra API real: login, acesso à importação, modelos CSV/XLSX e códigos no catálogo. Somente consultas/login/logout; nenhuma importação/oferta local criada. Contagens preservadas: 6 usuários, 5 empresas, 20 ofertas e 14 elegíveis; zero prévias locais.
 - Docker Desktop estava desligado e foi iniciado para os testes; banco do projeto iniciado manualmente, saudável e com `restart=no`. Frontend disponível em http://localhost:4200 e API em http://localhost:8080.
 - Guia `docs/IMPORTACAO_DE_OFERTAS.md`, README, painel e planejamento atualizados. Dependências fixas Apache POI 6.0.0 e Commons CSV 1.14.1, conferidas nas fontes oficiais. Nenhum push, publicação ou pipeline remoto executado.
+
+## Execução da etapa 10 — 19/11/2026
+
+- Entregar painel privado ADMIN com usuários/permissões, fornecedores, ofertas, catálogo, solicitações, indicadores, relatório e configuração de contato. Reutilizar sessão, CSRF, paginação e versões; remover dados privados ao perder sessão/perfil.
+- Primeiro fluxo: usuários com ativação/bloqueio e mudança de perfil versionadas, confirmação explícita e invalidação de sessões. Proibir autobloqueio e alteração do próprio perfil; atribuir FORNECEDOR somente com empresa cadastrada. Moderação mantém transições e versões existentes e exige motivo de bloqueio.
+- Catálogo: CRUD de categorias/marcas/produtos/variantes, validação de identidade/características, imagem HTTP(S), paginação e controle otimista. Impedir exclusão de registros referenciados. Impedir mudança de identidade de variante já ofertada e mudanças estruturais de categoria/produto em uso; permitir correção de apresentação. Serializar operações administrativas de catálogo para preservar as verificações entre administradores.
+- Solicitações: listar pendentes/finalizadas com fornecedor, características e versão; atender vinculando variante completa existente, ou recusar com motivo. Revisar correspondência explicitamente, sem aproximação automática. Finalização única com versão; resposta aparece no histórico do fornecedor.
+- Indicadores são fotografia do banco: contas ativas, empresas por situação, ofertas por moderação/elegibilidade, produtos/variantes e solicitações pendentes. Relatório CSV agregado por UF, sem dados pessoais, sem inventar vendas/cliques. Configuração inicial: texto de abertura da mensagem de contato WhatsApp, com validação e versão, mantendo características e link construídos pelo sistema.
+- Criar migração de versões do catálogo e configuração. Não criar admin com senha fixa; manter bootstrap por ambiente documentado e usar dados simulados no navegador para ações de QA. Preservar todos os exemplos locais.
+- Validar API em PostgreSQL descartável (ADMIN/CSRF, perfis/sessões, versões, referências, moderação, resolução, métricas/configuração), componentes Angular e Edge desktop/celular. Executar verify, format:check, testes e build. Registrar commits coerentes e guias; nenhum push/publicação.
+
+## Validação das APIs da etapa 10 — 19/11/2026
+
+- Migração V8 adiciona versões às quatro entidades do catálogo e configuração única de abertura do contato. APIs administrativas de CRUD, resolução, acesso, indicadores, relatório e configuração implementadas.
+- Alterações de acesso invalidam sessões, conferem versão, protegem o próprio administrador e serializam/revalidam o autor. Atribuição do perfil fornecedor exige empresa existente. O endpoint legado de situação permanece compatível.
+- Catálogo preserva referências e identidade em uso; escrita administrativa serializada, controle otimista e bloqueios de variante compatíveis com criação/importação de ofertas. Prévia de importação captura também a versão da variante.
+- Solicitações só são finalizadas uma vez, com resposta e versão; atendimento exige variante completa. Indicadores/CSV agregam dados reais e configuração altera somente a abertura da mensagem, mantendo elegibilidade e composição das características.
+- `mvnw.cmd -B -o verify`: BUILD SUCCESS, 138 testes, zero falhas/erros/ignorados. Após ajustes finais de campos descritivos do seletor e imports, `mvnw.cmd -B -o -Dtest=AdministracaoIntegrationTest verify` também passou com os 13 testes administrativos. Cenários incluem autorização/CSRF, versões, unicidade/referências, preservação da identidade, sessão/perfis, bloqueios concorrentes mantendo administrador ativo, respostas no histórico, métricas/configuração e alteração da variante após prévia.
+- Primeiro teste detectou parâmetro SQL opcional sem tipo na lista de solicitações; corrigido para VARCHAR explícito e revalidado. Todos os testes de autenticação, fornecedor, catálogo e importação existentes passaram na suíte completa.
+- API local reiniciada com demo, V8 aplicada e saúde UP. Primeiro administrador local criado pelo bootstrap com senha aleatória em arquivo ignorado; nenhum administrador adicionado às cargas demo e nenhuma senha incluída no código. Os seis usuários demo, cinco empresas, três produtos, seis variantes, vinte ofertas, quatorze elegíveis e uma solicitação foram preservados.
