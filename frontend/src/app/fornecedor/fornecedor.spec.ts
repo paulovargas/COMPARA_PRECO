@@ -435,4 +435,12 @@ describe('Solicitações de catálogo', () => {
       ),
     ).toContain('10 solicitações');
   });
+  it('volta à busca ao sair voluntariamente do painel', async () => {
+    const harness = await abrir('/fornecedor');
+    const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    TestBed.inject(SessaoStore).resolver(null);
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: {} });
+  });
 });

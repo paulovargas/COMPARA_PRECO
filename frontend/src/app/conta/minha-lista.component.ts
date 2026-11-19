@@ -46,7 +46,9 @@ export class MinhaListaComponent {
     effect(() => {
       if (this.sessao.estado() === 'pronta' && !this.sessao.usuario()) {
         this.estado.set({ tipo: 'carregando' });
-        void this.router.navigate(['/entrar'], { queryParams: { retorno: this.router.url } });
+        void this.router.navigate(this.sessao.aviso() ? ['/entrar'] : ['/'], {
+          queryParams: this.sessao.aviso() ? { retorno: this.router.url } : {},
+        });
       }
     });
     combineLatest([this.route.queryParamMap, this.atualizar.pipe(startWith(undefined))])

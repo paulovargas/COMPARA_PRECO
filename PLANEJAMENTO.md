@@ -347,3 +347,20 @@ Etapa 11: validar os fluxos integrados, revisar critérios de aceite e pendênci
 - Revisão adicional contra API/banco reais: login do administrador local, 7 contas/14 ofertas elegíveis, usuários, fornecedores, ofertas, catálogo/variantes descritivas, solicitação demo, configuração e CSV por UF. Nenhuma mutação comercial: apenas consultas e login/logout. Conflito entre redirecionamentos de logout foi encontrado nesta revisão, corrigido e coberto por teste; expiração mantém retorno ao login e saída voluntária volta à busca.
 - API saudável e serviços disponíveis em http://localhost:8080 e http://localhost:4200. PostgreSQL saudável com `restart=no`. Preservados 5 fornecedores, 3 produtos, 6 variantes, 20 ofertas, 14 elegíveis e 1 solicitação; o único acréscimo local foi o administrador inicial via bootstrap, com senha aleatória e credenciais em arquivo ignorado pelo Git.
 - README e guias atualizados, incluindo `docs/ADMINISTRACAO.md`. Backend registrado separadamente em `d6aff23`; esta entrega da interface fecha a etapa 10. Nenhum push, publicação ou pipeline remoto realizado. Próxima etapa: validação integrada e preparação para publicação.
+
+## Execução da etapa 11 — 19/11/2026
+
+- Conferir requisitos e validar o percurso integrado comprador/fornecedor/administrador, incluindo comparação, favoritos, contato, aprovação, moderação, importação e resolução de solicitação. Usar banco de homologação isolado, sem alterar exemplos locais.
+- Revisar logout e expiração nos painéis e na lista privada. Corrigir a navegação de saída voluntária mantendo retorno ao login para expiração; testar os comportamentos.
+- Preparar imagens Docker a partir dos artefatos validados, API Java sem root e frontend Angular servido por Nginx sem root. Contextos de build restritos, sem segredos/fontes desnecessárias. Profile de produção sem Swagger público e cookies Secure.
+- Criar Compose de produção independente: banco sem porta publicada, API interna, frontend em loopback para proxy TLS externo, volume próprio, healthchecks, limites de logs e restart=no para todos. Validar build e subida manual local, sem publicar imagens nem servidor.
+- Documentar configuração, primeiro admin, domínio/TLS, atualização/reversão, backup e restauração. Testar backup/restore em banco isolado. Nunca remover volumes existentes.
+- Executar regressão backend/frontend, build/formatação, revisão Edge desktop/celular sobre a distribuição final e registrar critérios de aceite e pendências. Publicação externa depende de destino/acessos ainda não informados; não marcar publicação como concluída.
+- Commits previstos: correções dos fluxos integrados; infraestrutura e documentação de implantação validada.
+
+## Validação dos fluxos integrados — 19/11/2026
+
+- Logout voluntário das áreas do fornecedor e Minha lista agora retorna à busca; expiração mantém retorno ao login e remove os dados privados. Comportamento alinhado ao painel administrativo e coberto por dois testes adicionais.
+- `mvnw.cmd -B -o verify`: BUILD SUCCESS, 138 testes, zero falhas/erros/ignorados. Frontend: formatação, 94 testes e build passaram, sem avisos de orçamento.
+- Roteiro HTTP integrado executado contra distribuição Docker em banco próprio: cadastro e novo login após cadastro da empresa, aprovação, catálogo/variante, oferta/moderação, comparação, favoritos/seguidos, contato, importação sem gravação antes da confirmação, confirmação repetida idempotente, solicitação atendida, bloqueio retirando oferta/contato e reaprovação recuperando publicação. Nenhum WhatsApp aberto ou mensagem enviada.
+- Banco de desenvolvimento preservado: 7 contas (incluindo admin local), 5 empresas, 20 ofertas e 14 elegíveis. Homologação usa projeto/volume independentes, sem carga demo.

@@ -84,7 +84,9 @@ export class FornecedorShellComponent {
     effect(() => {
       const usuario = this.sessao.usuario();
       if (this.sessao.estado() === 'pronta' && !usuario)
-        void this.router.navigate(['/entrar'], { queryParams: { retorno: this.router.url } });
+        void this.router.navigate(this.sessao.aviso() ? ['/entrar'] : ['/'], {
+          queryParams: this.sessao.aviso() ? { retorno: this.router.url } : {},
+        });
       else if (usuario?.perfil === 'FORNECEDOR') untracked(() => this.contexto.carregar());
     });
   }

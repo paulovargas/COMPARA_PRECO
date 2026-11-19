@@ -384,4 +384,17 @@ describe('Favoritos, seguidos e contato', () => {
       'fornecedorId=',
     );
   });
+  it('volta à busca ao sair voluntariamente da lista privada', async () => {
+    TestBed.inject(SessaoStore).resolver(usuario);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/minha-lista', MinhaListaComponent);
+    http
+      .expectOne((r) => r.url === '/api/conta/favoritos/produtos')
+      .flush({ itens: [], pagina: 0, tamanho: 12, totalElementos: 0, totalPaginas: 0 });
+    const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    TestBed.inject(SessaoStore).resolver(null);
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: {} });
+  });
 });
