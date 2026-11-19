@@ -44,7 +44,7 @@ Use “Solicitar inclusão” para informar nome, marca, modelo, categoria e car
 
 A solicitação fica vinculada à empresa da sessão e inicia PENDENTE. Não cria automaticamente produto, variante ou oferta no catálogo compartilhado. Há limite de 10 pendentes por empresa. Envios pendentes iguais, ignorando maiúsculas e espaços, retornam conflito; empresas diferentes podem solicitar o mesmo item. Um bloqueio transacional da empresa protege limite/duplicidade também sob concorrência.
 
-A listagem própria continua acessível à empresa pendente ou bloqueada. O fluxo de análise, recusa com motivo ou atendimento com variante vinculada será implementado no painel administrativo da etapa 10. O fornecedor poderá então localizar a variante no catálogo e cadastrar sua oferta. Importação CSV/XLSX pertence à etapa 9.
+A listagem própria continua acessível à empresa pendente ou bloqueada. O painel administrativo permite recusar com motivo ou atender vinculando uma variante completa. O fornecedor pode localizar a variante correspondente no catálogo e cadastrar sua oferta. Importação CSV/XLSX também está disponível.
 
 ### API das solicitações
 
@@ -90,3 +90,5 @@ Os testes do backend usam PostgreSQL descartável e cobrem o CRUD já existente,
 ## Importação em lote
 
 O painel também permite importar CSV/XLSX com prévia e confirmação. No catálogo, copie o código da variante. Veja o [formato, limites e tratamento de conflitos](IMPORTACAO_DE_OFERTAS.md).
+
+A análise administrativa de solicitações está disponível. A equipe pode vincular uma variante completa ou recusar com resposta; o histórico deste painel mostra a decisão e o código correspondente. Veja [Administração](ADMINISTRACAO.md).

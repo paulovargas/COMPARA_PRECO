@@ -11,6 +11,9 @@
     } @else if (auth.sessao.usuario(); as usuario) {
       <span class="nome-usuario">Olá, {{ usuario.nome }}</span
       ><a routerLink="/minha-lista">Minha lista</a>
+      @if (usuario.perfil === 'ADMIN') {
+        <a routerLink="/admin">Administração</a>
+      }
       @if (usuario.perfil !== 'ADMIN') {
         <a routerLink="/fornecedor">{{
           usuario.perfil === 'FORNECEDOR' ? 'Painel do fornecedor' : 'Quero vender'

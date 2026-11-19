@@ -237,3 +237,34 @@
   max-width: 100%;
   margin-bottom: 1rem;
 }
+
+.painel.admin {
+  .cartao,
+  .referencia {
+    overflow-wrap: anywhere;
+  }
+  .indicadores {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .numero-indicador {
+    font-size: 2rem;
+    color: #087564;
+  }
+  .referencia {
+    border: 1px solid #dce5dc;
+    padding: 1rem;
+    margin-block: 1rem;
+    border-radius: 0.5rem;
+    min-width: 0;
+  }
+  .opcoes-referencia {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .opcao-referencia {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+}

@@ -4,11 +4,11 @@ Plataforma para buscar produtos, comparar ofertas equivalentes e entrar em conta
 
 ## Entrega atual
 
-API com catálogo, autenticação, permissões, fornecedores, moderação, ofertas e busca pública. A interface Angular permite buscar produtos, aplicar filtros, paginar resultados e comparar ofertas equivalentes, com destaque para todos os empates no menor preço. As telas são responsivas e conectadas à API, com cadastro/login/logout, produtos favoritos, fornecedores seguidos e contato WhatsApp. O painel do fornecedor permite cadastrar a empresa, consultar variantes, gerenciar ofertas e solicitar inclusões no catálogo. A importação CSV/XLSX inclui modelos, prévia, erros por linha e confirmação integral. Administração completa será entregue na próxima etapa.
+API com catálogo, autenticação, permissões, fornecedores, moderação, ofertas e busca pública. A interface Angular permite buscar produtos, aplicar filtros, paginar resultados e comparar ofertas equivalentes, com destaque para todos os empates no menor preço. As telas são responsivas e conectadas à API, com cadastro/login/logout, produtos favoritos, fornecedores seguidos e contato WhatsApp. O painel do fornecedor permite cadastrar a empresa, consultar variantes, gerenciar ofertas e solicitar inclusões no catálogo. A importação CSV/XLSX inclui modelos, prévia, erros por linha e confirmação integral. O painel administrativo inclui usuários/perfis, moderação, CRUD de catálogo, análise de solicitações, indicadores, relatório por estado e configuração do contato.
 
 Abra [http://127.0.0.1:4200](http://127.0.0.1:4200) após iniciar os serviços abaixo. A busca mostra apenas ofertas publicadas e elegíveis; um banco sem ofertas retorna o estado vazio, sem produtos fictícios. Veja o [guia da interface](docs/INTERFACE_PUBLICA.md).
 
-Veja também o [guia de importação de ofertas](docs/IMPORTACAO_DE_OFERTAS.md).
+Veja também os guias de [importação de ofertas](docs/IMPORTACAO_DE_OFERTAS.md) e [administração](docs/ADMINISTRACAO.md).
 
 ## Stack
 

@@ -14,7 +14,7 @@ A API usa Spring Security com sessão JDBC no PostgreSQL. O navegador recebe ape
 | GET | `/api/admin/usuarios?pagina=0&tamanho=20` | ADMIN; consulta paginada, tamanho máximo 50 |
 | PATCH | `/api/admin/usuarios/{id}/situacao` | ADMIN com CSRF; corpo `{"ativo":false}` ou `{"ativo":true}` |
 
-Cadastro recebe `nome`, `email` e `senha`. Campos adicionais não atribuem perfil; `perfil=ADMIN` não permite criar um administrador. Login recebe `email` e `senha`. Respostas de usuário contêm `id`, `nome`, `email`, `perfil`, `ativo` e `criadoEm`.
+Cadastro recebe `nome`, `email` e `senha`. Campos adicionais não atribuem perfil; `perfil=ADMIN` não permite criar um administrador. Login recebe `email` e `senha`. Respostas de usuário contêm `id`, `nome`, `email`, `perfil`, `ativo`, `criadoEm` e `versao`.
 
 Os perfis são COMPRADOR, FORNECEDOR e ADMIN. Rotas `/api/admin/**` são exclusivas de ADMIN e `/api/fornecedor/**` de FORNECEDOR. O cadastro inicial da empresa usa POST `/api/fornecedores`, permitido para comprador e fornecedor. O sucesso altera o perfil e exige novo login. Veja [fornecedores e ofertas](FORNECEDORES_E_OFERTAS.md). Catálogo público e comparação terão suas permissões liberadas junto aos endpoints correspondentes. As demais rotas são negadas por padrão. Saúde e documentação OpenAPI são públicas; `/actuator/info` exige ADMIN.
 
@@ -94,7 +94,7 @@ O bootstrap é para a configuração inicial de uma instância. Não é um mecan
 
 ## Bloqueio e limites
 
-Bloquear uma conta remove suas sessões persistidas. Cada requisição autenticada também confere se o usuário ainda está ativo e mantém o mesmo perfil e email. Mudanças invalidam a sessão antiga. Desbloquear permite novo login, sem reativar cookies antigos. Um administrador não pode bloquear a própria conta.
+Bloquear uma conta remove suas sessões persistidas. Cada requisição autenticada também confere se o usuário ainda está ativo e mantém o mesmo perfil e email. Mudanças invalidam a sessão antiga. Desbloquear permite novo login, sem reativar cookies antigos. Um administrador não pode bloquear a própria conta nem remover o próprio perfil administrativo. A alteração versionada de acesso está descrita no [painel administrativo](ADMINISTRACAO.md).
 
 Os contadores de tentativas são persistidos e atualizados atomicamente. Contam tentativas válidas estruturalmente, inclusive logins bem-sucedidos:
 

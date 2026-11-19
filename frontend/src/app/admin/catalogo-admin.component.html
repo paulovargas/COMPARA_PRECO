@@ -1,0 +1,160 @@
+<h2>Catálogo: {{ tipo }}</h2>
+<nav class="abas" aria-label="Tipos de catálogo">
+  @for (opcao of tipos; track opcao) {
+    <a [routerLink]="'/admin/catalogo/' + opcao" routerLinkActive="ativa">{{ opcao }}</a>
+  }
+</nav>
+<p>
+  Características de variantes em uso são preservadas. Para outro produto ou conjunto de
+  características, cadastre um novo registro. Registros referenciados não podem ser excluídos.
+</p>
+@if (carregando()) {
+  <p role="status">Carregando catálogo…</p>
+}
+@if (erro()) {
+  <p class="aviso" role="alert">{{ erro() }}</p>
+}
+@if (sucesso()) {
+  <p role="status">{{ sucesso() }}</p>
+}
+@if (!editando() && !excluir()) {
+  <div class="acoes">
+    <button class="botao principal" [disabled]="salvando() || carregando()" (click)="editar(null)">
+      Cadastrar registro</button
+    ><button class="link-botao" (click)="cancelar()">Recarregar lista</button>
+  </div>
+}
+@if (editando()) {
+  <form class="cartao" [formGroup]="form" (ngSubmit)="salvar()">
+    <h3>{{ item() ? 'Editar registro' : 'Novo registro' }}</h3>
+    <fieldset [disabled]="salvando() || conflito() || carregando()">
+      @if (tipo !== 'variantes') {
+        <label for="nome-catalogo-admin">Nome</label
+        ><input
+          id="nome-catalogo-admin"
+          formControlName="nome"
+          [attr.maxlength]="tipo === 'produtos' ? 160 : 100"
+          required
+        />
+      }
+      @if (tipo === 'categorias') {
+        <label
+          ><input type="checkbox" formControlName="exigeArmazenamento" /> Exige armazenamento</label
+        ><label><input type="checkbox" formControlName="exigeCor" /> Exige cor</label>
+        <label for="obrigatorios-admin">Chaves dos atributos obrigatórios</label
+        ><input
+          id="obrigatorios-admin"
+          formControlName="atributosObrigatorios"
+          maxlength="300"
+          placeholder="ram_gb, conexao"
+        />
+        <p>Até 8 chaves, separadas por vírgula. Letras minúsculas, números e sublinhado.</p>
+      }
+      @if (tipo === 'produtos') {
+        <app-referencia-catalogo
+          tipo="categorias"
+          [valor]="form.controls.categoriaId.value"
+          (escolher)="form.controls.categoriaId.setValue($event)"
+        />
+        <app-referencia-catalogo
+          tipo="marcas"
+          [valor]="form.controls.marcaId.value"
+          (escolher)="form.controls.marcaId.setValue($event)"
+        />
+        <label for="modelo-admin">Modelo</label
+        ><input id="modelo-admin" formControlName="modelo" maxlength="120" required />
+        <label for="descricao-admin">Descrição</label
+        ><textarea
+          id="descricao-admin"
+          formControlName="descricao"
+          maxlength="2000"
+          rows="3"
+        ></textarea>
+        <label for="imagem-admin">URL da imagem (HTTP ou HTTPS)</label
+        ><input id="imagem-admin" type="url" formControlName="imagemUrl" maxlength="2000" />
+      }
+      @if (tipo === 'variantes') {
+        <app-referencia-catalogo
+          tipo="produtos"
+          [valor]="form.controls.produtoId.value"
+          (escolher)="form.controls.produtoId.setValue($event)"
+        />
+        <label for="armazenamento-admin">Armazenamento em GB (opcional)</label
+        ><input id="armazenamento-admin" formControlName="armazenamentoGb" inputmode="numeric" />
+        <label for="cor-admin">Cor (opcional)</label
+        ><input id="cor-admin" formControlName="cor" maxlength="80" />
+        <label for="condicao-admin">Condição</label
+        ><select id="condicao-admin" formControlName="condicao">
+          <option value="NOVO">Novo</option>
+          <option value="USADO">Usado</option>
+          <option value="RECONDICIONADO">Recondicionado</option>
+        </select>
+        <label for="atributos-admin">Atributos: uma chave=valor por linha</label
+        ><textarea
+          id="atributos-admin"
+          formControlName="atributos"
+          rows="4"
+          maxlength="3000"
+          placeholder="ram_gb=8"
+        ></textarea>
+        <p>Até 8 atributos. A variante só pode receber ofertas quando completa.</p>
+      }
+      <button class="botao principal" type="submit">
+        {{ salvando() ? 'Salvando…' : 'Salvar registro' }}
+      </button>
+    </fieldset>
+    <button class="link-botao" type="button" [disabled]="salvando()" (click)="cancelar()">
+      Descartar e recarregar
+    </button>
+  </form>
+}
+@if (excluir(); as registro) {
+  <div class="cartao">
+    <h3>Confirmar exclusão</h3>
+    <p>{{ rotulo(registro) }}</p>
+    <p>
+      Esta ação exclui o registro se não houver referências. Ela não pode ser desfeita pela
+      interface.
+    </p>
+    <button class="botao" [disabled]="salvando()" (click)="confirmarExclusao()">
+      Confirmar exclusão</button
+    ><button class="link-botao" [disabled]="salvando()" (click)="excluir.set(null)">
+      Cancelar exclusão
+    </button>
+  </div>
+}
+@if (dados(); as paginaAtual) {
+  <p>{{ paginaAtual.totalElementos }} registros</p>
+  <div class="lista-painel">
+    @for (registro of paginaAtual.itens; track registro.id) {
+      <article class="cartao">
+        <h3>{{ rotulo(registro) }}</h3>
+        <p class="codigo-importacao">Código: {{ registro.id }}</p>
+        <div class="acoes">
+          <button
+            class="botao"
+            [disabled]="editando() || !!excluir() || salvando() || carregando()"
+            (click)="editar(registro)"
+          >
+            Editar registro</button
+          ><button
+            class="link-botao"
+            [disabled]="editando() || !!excluir() || salvando() || carregando()"
+            (click)="excluir.set(registro)"
+          >
+            Excluir registro
+          </button>
+        </div>
+      </article>
+    } @empty {
+      <p class="vazio">Nenhum registro encontrado.</p>
+    }
+  </div>
+  @if (!editando() && !excluir() && !salvando()) {
+    <app-paginacao
+      [pagina]="paginaAtual.pagina"
+      [totalPaginas]="paginaAtual.totalPaginas"
+      (mudar)="pagina($event)"
+    />
+  }
+}

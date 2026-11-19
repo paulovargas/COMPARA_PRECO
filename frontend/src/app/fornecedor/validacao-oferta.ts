@@ -24,6 +24,11 @@ export function mensagemOperacao(erro: HttpErrorResponse): string {
     return erro.error.mensagem;
   if (erro.status === 413) return 'O arquivo excedeu o limite de 2 MB.';
   const mensagens: Record<string, string> = {
+    CATALOGO_EM_USO:
+      'Este registro já é usado. Crie outro produto ou variante para características diferentes.',
+    CATALOGO_INVALIDO: 'Confira textos, atributos e URL da imagem.',
+    EMPRESA_OBRIGATORIA: 'A conta deve cadastrar uma empresa antes de receber o perfil fornecedor.',
+    AUTOBLOQUEIO_PROIBIDO: 'Você não pode bloquear ou remover seu próprio acesso administrativo.',
     REGISTRO_DESATUALIZADO:
       'Os dados foram alterados em outra sessão. Sua edição foi mantida; descarte e recarregue os dados antes de tentar novamente.',
     FORNECEDOR_NAO_APROVADO:

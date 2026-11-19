@@ -35,7 +35,7 @@ XLSX aceita células numéricas para preço e estoque; coloque códigos UUID com
 - **IGNORAR**: todos os valores são iguais; preserva versão e data de atualização.
 - **INVALIDA**: erros listados por linha. Qualquer erro impede o lote inteiro. Toda ocorrência de variante repetida no arquivo é marcada como inválida.
 - Prévia válida por 30 minutos; até 10 pendentes por empresa. O link com `?previa=...` permite reabrir após recarregar, sempre com a mesma conta. Prévias vencidas são removidas quando a empresa envia outro arquivo, incluindo resultados já aplicados após esse prazo; não constituem histórico permanente.
-- Confirmação revalida aprovação da empresa, existência/completude das variantes e identidade/versão das ofertas. Criação, remoção, edição ou moderação concorrente da oferta exige uma nova prévia.
+- Confirmação revalida aprovação da empresa, existência/completude das variantes e identidade/versão das ofertas e versão da variante. Criação, remoção, edição ou moderação concorrente da oferta exige uma nova prévia.
 - Tudo é aplicado em uma transação. Conflitos não deixam parte do lote gravada. A empresa é bloqueada primeiro, seguindo a ordem do CRUD e da moderação.
 - Repetir a confirmação de uma prévia aplicada ainda disponível devolve o mesmo resultado, sem gravar novamente. Em falha de conexão, é possível tentar confirmar a mesma prévia. Não há repetição automática de mutações.
 - Reimportar o mesmo arquivo gera outra prévia: valores já iguais são ignorados.

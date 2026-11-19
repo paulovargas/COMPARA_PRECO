@@ -1,3 +1,4 @@
+import { adminGuard } from './admin/admin.guard';
 import { Routes } from '@angular/router';
 import { fornecedorGuard } from './fornecedor/fornecedor.guard';
 import { contaGuard } from './conta/conta.guard';
@@ -74,6 +75,82 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./fornecedor/solicitacoes.component').then((m) => m.SolicitacoesComponent),
         title: 'Solicitações de catálogo | Compara Preço',
+      },
+    ],
+  },
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    canActivateChild: [adminGuard],
+    loadComponent: () => import('./admin/admin-shell.component').then((m) => m.AdminShellComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./admin/visao-geral.component').then((m) => m.VisaoGeralComponent),
+        title: 'Administração | Compara Preço',
+      },
+      {
+        path: 'configuracoes',
+        loadComponent: () =>
+          import('./admin/configuracao-admin.component').then((m) => m.ConfiguracaoAdminComponent),
+        title: 'Configurações | Compara Preço',
+      },
+      {
+        path: 'usuarios',
+        data: { area: 'usuarios' },
+        loadComponent: () =>
+          import('./admin/admin-lista.component').then((m) => m.AdminListaComponent),
+        title: 'Administração | Compara Preço',
+      },
+      {
+        path: 'fornecedores',
+        data: { area: 'fornecedores' },
+        loadComponent: () =>
+          import('./admin/admin-lista.component').then((m) => m.AdminListaComponent),
+        title: 'Administração | Compara Preço',
+      },
+      {
+        path: 'ofertas',
+        data: { area: 'ofertas' },
+        loadComponent: () =>
+          import('./admin/admin-lista.component').then((m) => m.AdminListaComponent),
+        title: 'Administração | Compara Preço',
+      },
+      {
+        path: 'solicitacoes',
+        data: { area: 'solicitacoes' },
+        loadComponent: () =>
+          import('./admin/admin-lista.component').then((m) => m.AdminListaComponent),
+        title: 'Administração | Compara Preço',
+      },
+      {
+        path: 'catalogo/categorias',
+        data: { tipo: 'categorias' },
+        loadComponent: () =>
+          import('./admin/catalogo-admin.component').then((m) => m.CatalogoAdminComponent),
+        title: 'Catálogo administrativo | Compara Preço',
+      },
+      {
+        path: 'catalogo/marcas',
+        data: { tipo: 'marcas' },
+        loadComponent: () =>
+          import('./admin/catalogo-admin.component').then((m) => m.CatalogoAdminComponent),
+        title: 'Catálogo administrativo | Compara Preço',
+      },
+      {
+        path: 'catalogo/produtos',
+        data: { tipo: 'produtos' },
+        loadComponent: () =>
+          import('./admin/catalogo-admin.component').then((m) => m.CatalogoAdminComponent),
+        title: 'Catálogo administrativo | Compara Preço',
+      },
+      {
+        path: 'catalogo/variantes',
+        data: { tipo: 'variantes' },
+        loadComponent: () =>
+          import('./admin/catalogo-admin.component').then((m) => m.CatalogoAdminComponent),
+        title: 'Catálogo administrativo | Compara Preço',
       },
     ],
   },

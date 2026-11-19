@@ -1,0 +1,110 @@
+<h2>{{ titulo }}</h2>
+@if (filtros.length) {
+  <label for="filtro-admin">Situação</label
+  ><select id="filtro-admin" [value]="filtro()" [disabled]="salvando()" (change)="filtrar($event)">
+    <option value="">Todas</option>
+    @for (opcao of filtros; track opcao) {
+      <option [value]="opcao">{{ opcao }}</option>
+    }
+  </select>
+}
+@if (carregando()) {
+  <p role="status">Carregando registros…</p>
+}
+@if (sucesso()) {
+  <p role="status">{{ sucesso() }}</p>
+}
+@if (erro()) {
+  <p class="aviso" role="alert">{{ erro() }}</p>
+}
+@if (!selecionado() && !carregando()) {
+  <button class="link-botao" (click)="cancelar()">Recarregar lista</button>
+}
+@if (selecionado(); as item) {
+  <form class="cartao" [formGroup]="form" (ngSubmit)="salvar()">
+    <h3>Revisar alteração: {{ item.titulo }}</h3>
+    <p>
+      A alteração será aplicada somente ao confirmar. Alterações de acesso encerram as sessões da
+      conta afetada.
+    </p>
+    <fieldset [disabled]="salvando() || conflito() || carregando()">
+      @if (area === 'usuarios') {
+        <label for="perfil-admin">Perfil da conta</label
+        ><select id="perfil-admin" formControlName="perfil">
+          <option value="COMPRADOR">Comprador</option>
+          <option value="FORNECEDOR">Fornecedor</option>
+          <option value="ADMIN">Administrador</option>
+        </select>
+        <label><input type="checkbox" formControlName="ativo" /> Conta ativa</label>
+        <p>
+          Fornecedor exige empresa cadastrada. Trocar o perfil pode retirar as ofertas da busca.
+        </p>
+      } @else {
+        <label for="destino-admin">Decisão</label
+        ><select id="destino-admin" formControlName="destino">
+          @for (acao of item.acoes; track acao) {
+            <option [value]="acao">{{ acao }}</option>
+          }
+        </select>
+        <label for="motivo-admin">Motivo ou resposta</label
+        ><textarea id="motivo-admin" formControlName="motivo" maxlength="500" rows="3"></textarea>
+        @if (area === 'solicitacoes' && form.controls.destino.value === 'ATENDIDA') {
+          <p>Confira todas as características antes de vincular. A variante deve estar completa.</p>
+          <app-referencia-catalogo
+            tipo="variantes"
+            [valor]="form.controls.varianteId.value"
+            (escolher)="form.controls.varianteId.setValue($event)"
+          />
+        }
+      }
+      <button class="botao principal" type="submit">
+        {{ salvando() ? 'Salvando…' : 'Confirmar alteração' }}
+      </button>
+    </fieldset>
+    <button class="link-botao" type="button" [disabled]="salvando()" (click)="cancelar()">
+      Descartar e recarregar
+    </button>
+  </form>
+}
+@if (dados(); as paginaAtual) {
+  <p>{{ paginaAtual.totalElementos }} registros</p>
+  <div class="lista-painel">
+    @for (item of paginaAtual.itens; track item.id) {
+      <article class="cartao">
+        <h3>{{ item.titulo }}</h3>
+        <strong>{{ item.situacao }}</strong>
+        @for (detalhe of item.detalhes; track $index) {
+          @if (detalhe) {
+            <p>{{ detalhe }}</p>
+          }
+        }
+        @if (item.variante; as variante) {
+          <app-caracteristicas [variante]="variante" />
+        }
+        @if (item.acoes.length) {
+          <button
+            class="botao"
+            [disabled]="
+              salvando() ||
+              carregando() ||
+              !!selecionado() ||
+              (area === 'usuarios' && item.id === sessao.usuario()?.id)
+            "
+            (click)="editar(item)"
+          >
+            Revisar {{ area === 'usuarios' ? 'acesso' : 'decisão' }}
+          </button>
+        }
+      </article>
+    } @empty {
+      <p class="vazio">Nenhum registro encontrado.</p>
+    }
+  </div>
+  @if (!selecionado() && !salvando()) {
+    <app-paginacao
+      [pagina]="paginaAtual.pagina"
+      [totalPaginas]="paginaAtual.totalPaginas"
+      (mudar)="pagina($event)"
+    />
+  }
+}

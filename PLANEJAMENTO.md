@@ -56,7 +56,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | 7 | Autenticação na interface, favoritos, fornecedores seguidos e WhatsApp; persistência por usuário | `feat: adiciona conta favoritos e contato` | Concluída |
 | 8 | Painel do fornecedor para empresa, catálogo, preços, estoque e disponibilidade | `feat: cria painel do fornecedor` | Concluída |
 | 9 | CSV/XLSX com modelo de arquivo, limites, validação, prévia e confirmação; testes de arquivos inválidos e duplicidades | `feat: adiciona importacao de ofertas` | Concluída |
-| 10 | Painel administrativo com cadastros, moderação, bloqueio, permissões, estatísticas, relatórios e configurações | `feat: cria painel administrativo` | Em execução: APIs validadas |
+| 10 | Painel administrativo com cadastros, moderação, bloqueio, permissões, estatísticas, relatórios e configurações | `feat: cria painel administrativo` | Concluída |
 | 11 | Fluxos integrados validados, documentação completa, configuração de produção, backup e roteiro de publicação | `docs: documenta validacao e publicacao` e correções específicas | Pendente |
 
 Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofertas sustentam comparação; o fluxo de comparação deve funcionar antes dos painéis completos. Importação depende das regras de variante e oferta já testadas.
@@ -88,7 +88,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 10: implementar painel administrativo com catálogo completo, moderação, usuários/permissões, estatísticas e configurações. Incluir análise das solicitações de catálogo, com vinculação de variante e resposta ao fornecedor. Detalhar métricas e critérios de aceite antes de implementar.
+Etapa 11: validar os fluxos integrados, revisar critérios de aceite e pendências de produção, preparar execução/deploy e documentação operacional. Definir servidor/domínio/credenciais antes de publicar; enquanto isso, preparar e verificar os artefatos locais.
 
 ## Registro da etapa 1 — 17/11/2026
 
@@ -336,3 +336,14 @@ Etapa 10: implementar painel administrativo com catálogo completo, moderação,
 - `mvnw.cmd -B -o verify`: BUILD SUCCESS, 138 testes, zero falhas/erros/ignorados. Após ajustes finais de campos descritivos do seletor e imports, `mvnw.cmd -B -o -Dtest=AdministracaoIntegrationTest verify` também passou com os 13 testes administrativos. Cenários incluem autorização/CSRF, versões, unicidade/referências, preservação da identidade, sessão/perfis, bloqueios concorrentes mantendo administrador ativo, respostas no histórico, métricas/configuração e alteração da variante após prévia.
 - Primeiro teste detectou parâmetro SQL opcional sem tipo na lista de solicitações; corrigido para VARCHAR explícito e revalidado. Todos os testes de autenticação, fornecedor, catálogo e importação existentes passaram na suíte completa.
 - API local reiniciada com demo, V8 aplicada e saúde UP. Primeiro administrador local criado pelo bootstrap com senha aleatória em arquivo ignorado; nenhum administrador adicionado às cargas demo e nenhuma senha incluída no código. Os seis usuários demo, cinco empresas, três produtos, seis variantes, vinte ofertas, quatorze elegíveis e uma solicitação foram preservados.
+
+## Validação da interface da etapa 10 — 19/11/2026
+
+- Painel Angular em `/admin`, acessível pelo cabeçalho somente para ADMIN, com guardas e retirada dos dados privados ao expirar sessão/mudar perfil. Navegação para visão geral, usuários, fornecedores, ofertas, catálogo, solicitações e configuração.
+- Listas paginadas, filtros por situação, revisão antes de confirmar, motivo de bloqueio, versões e conflitos que preservam o formulário até descarte/recarga. Proteção contra envio duplicado e confirmação explícita para exclusão. Seletores de referência paginados, com nome/características dos registros e sem limite artificial à primeira página.
+- Indicadores reais, CSV agregado por estado e configuração versionada do contato implementados. Solicitações finalizadas pela API aparecem no histórico do fornecedor; atendimento seleciona variante completa explicitamente, sem criar ofertas.
+- Frontend: `npm.cmd run format:check`, `npm.cmd test -- --watch=false` e `npm.cmd run build` passaram, com 92 testes. São 15 casos adicionais de acesso por perfil, CSRF/versões, confirmação, motivos, filtros/cancelamento, conflito/recarga, catálogo/atributos/exclusão, referências paginadas, configuração e navegação em expiração/logout. Bundle inicial aproximadamente 308 kB, sem avisos de orçamento.
+- Edge desktop 1440×1000 e celular 390×844: indicadores, perfis, moderação, motivos/conflitos, catálogo/seletores/exclusão, resolução de solicitação e configuração/recarga/expiração revisados com respostas HTTP simuladas. Capturas inspecionadas e sem overflow horizontal.
+- Revisão adicional contra API/banco reais: login do administrador local, 7 contas/14 ofertas elegíveis, usuários, fornecedores, ofertas, catálogo/variantes descritivas, solicitação demo, configuração e CSV por UF. Nenhuma mutação comercial: apenas consultas e login/logout. Conflito entre redirecionamentos de logout foi encontrado nesta revisão, corrigido e coberto por teste; expiração mantém retorno ao login e saída voluntária volta à busca.
+- API saudável e serviços disponíveis em http://localhost:8080 e http://localhost:4200. PostgreSQL saudável com `restart=no`. Preservados 5 fornecedores, 3 produtos, 6 variantes, 20 ofertas, 14 elegíveis e 1 solicitação; o único acréscimo local foi o administrador inicial via bootstrap, com senha aleatória e credenciais em arquivo ignorado pelo Git.
+- README e guias atualizados, incluindo `docs/ADMINISTRACAO.md`. Backend registrado separadamente em `d6aff23`; esta entrega da interface fecha a etapa 10. Nenhum push, publicação ou pipeline remoto realizado. Próxima etapa: validação integrada e preparação para publicação.

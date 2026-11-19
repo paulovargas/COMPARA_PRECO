@@ -26,7 +26,7 @@ A senha está armazenada com BCrypt fator 12. Essas credenciais pertencem apenas
 5. **Conta:** entre como comprador e consulte “Minha lista”, remova/adicione favoritos e siga fornecedores.
 6. **Fornecedor:** entre como Paulista, use “Painel do fornecedor” e altere preço/estoque/disponibilidade. A busca reflete a alteração; moderação continua preservada. Ofertas novas aguardam análise.
 7. **Estados privados:** Rio demonstra falta de estoque/indisponibilidade; Minas demonstra moderação pendente/bloqueada; as duas últimas contas demonstram pendência/bloqueio de empresa.
-8. **Solicitação:** Paulista possui uma solicitação pendente de Galaxy S25. Atendimento administrativo será implementado na etapa 10.
+8. **Solicitação:** Paulista possui uma solicitação pendente de Galaxy S25. Um administrador pode analisar e responder pelo painel administrativo, vinculando uma variante completa ou recusando com motivo.
 
 ## Conteúdo inicial
 
