@@ -1,36 +1,57 @@
-name: Validação
+name: CI e imagens
 
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: '25'
           cache: maven
       - run: sh mvnw -B verify
-      - run: docker build -t compara-preco-api:ci .
+      - name: Construir imagem validada
+        env:
+          SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          docker build --label "org.opencontainers.image.source=$SOURCE_URL" --label "org.opencontainers.image.revision=$GIT_SHA" -t compara-preco-api:ci .
+          docker save compara-preco-api:ci | gzip > "$RUNNER_TEMP/api.tar.gz"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: api-image
+          path: ${{ runner.temp }}/api.tar.gz
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
 
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.15.1'
           cache: npm
@@ -39,4 +60,52 @@ jobs:
       - run: npm run format:check
       - run: npm test -- --watch=false
       - run: npm run build
-      - run: docker build -t compara-preco-web:ci .
+      - name: Construir imagem validada
+        env:
+          SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          docker build --label "org.opencontainers.image.source=$SOURCE_URL" --label "org.opencontainers.image.revision=$GIT_SHA" -t compara-preco-web:ci .
+          docker save compara-preco-web:ci | gzip > "$RUNNER_TEMP/web.tar.gz"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-image
+          path: ${{ runner.temp }}/web.tar.gz
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+
+  publicar:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: '*-image'
+          merge-multiple: true
+          path: ${{ runner.temp }}/imagens
+      - name: Autenticar no GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USER" --password-stdin
+      - name: Publicar as mesmas imagens aprovadas
+        env:
+          REPOSITORY: ${{ github.repository }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          prefix="ghcr.io/${REPOSITORY,,}"
+          for service in api web; do
+            docker load -i "$RUNNER_TEMP/imagens/$service.tar.gz"
+            image="$prefix-$service:$GIT_SHA"
+            docker tag "compara-preco-$service:ci" "$image"
+            docker push "$image"
+            printf '%s\n' "$image" >> "$GITHUB_STEP_SUMMARY"
+          done

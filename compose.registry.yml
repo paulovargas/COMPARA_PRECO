@@ -1,0 +1,8 @@
+# Overlay para imagens publicadas. Requer Docker Compose >= 2.24.
+services:
+  api:
+    image: ${IMAGE_PREFIX:?Defina IMAGE_PREFIX}-api:${APP_VERSION:?Defina APP_VERSION}
+    build: !reset null
+  web:
+    image: ${IMAGE_PREFIX:?Defina IMAGE_PREFIX}-web:${APP_VERSION:?Defina APP_VERSION}
+    build: !reset null

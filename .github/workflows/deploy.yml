@@ -1,0 +1,66 @@
+name: Deploy manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      versao:
+        description: SHA completo de um commit publicado pelo CI
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-producao
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: producao
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Preparar SSH e validar parâmetros
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          SSH_HOST: ${{ vars.DEPLOY_HOST }}
+          SSH_USER: ${{ vars.DEPLOY_USER }}
+          SSH_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+          APP_DIR: ${{ vars.DEPLOY_PATH }}
+          VERSION: ${{ inputs.versao }}
+        run: |
+          set -euo pipefail
+          [[ "$VERSION" =~ ^[a-f0-9]{40}$ ]] || { echo 'Informe um SHA completo, com 40 caracteres hexadecimais.'; exit 2; }
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9.-]+$ && "$SSH_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || { echo 'Configure DEPLOY_HOST e DEPLOY_USER no Environment producao.'; exit 2; }
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ && "$SSH_PORT" -ge 1 && "$SSH_PORT" -le 65535 ]] || { echo 'DEPLOY_PORT deve ser de 1 a 65535.'; exit 2; }
+          [[ "$APP_DIR" =~ ^/[a-zA-Z0-9_./-]+$ && "$APP_DIR" != / && "$APP_DIR" != *..* ]] || { echo 'Configure DEPLOY_PATH absoluto, sem espaços nem travessia.'; exit 2; }
+          [[ -n "$SSH_PRIVATE_KEY" && -n "$KNOWN_HOSTS" ]] || { echo 'Configure Secrets do Environment producao.'; exit 2; }
+          install -d -m 700 "$RUNNER_TEMP/ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/ssh/key"
+          printf '%s\n' "$KNOWN_HOSTS" > "$RUNNER_TEMP/ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/ssh/key" "$RUNNER_TEMP/ssh/known_hosts"
+      - name: Transferir composição e implantar versão publicada
+        env:
+          SSH_HOST: ${{ vars.DEPLOY_HOST }}
+          SSH_USER: ${{ vars.DEPLOY_USER }}
+          SSH_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+          APP_DIR: ${{ vars.DEPLOY_PATH }}
+          VERSION: ${{ inputs.versao }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          options=(-i "$RUNNER_TEMP/ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/ssh/known_hosts")
+          destination="$SSH_USER@$SSH_HOST"
+          prefix="ghcr.io/${REPOSITORY,,}"
+          printf -v prepare 'test -d %q && test -f %q && mkdir -p %q' "$APP_DIR" "$APP_DIR/.env.producao" "$APP_DIR/releases/$VERSION"
+          ssh "${options[@]}" -p "$SSH_PORT" "$destination" "$prepare"
+          scp "${options[@]}" -P "$SSH_PORT" compose.producao.yml compose.registry.yml "$destination:$APP_DIR/releases/$VERSION/"
+          printf -v command 'bash -s -- %q %q %q' "$APP_DIR" "$prefix" "$VERSION"
+          ssh "${options[@]}" -p "$SSH_PORT" "$destination" "$command" < scripts/deploy-remoto.sh
+      - name: Remover chave temporária
+        if: always()
+        run: rm -f -- "$RUNNER_TEMP/ssh/key" "$RUNNER_TEMP/ssh/known_hosts"

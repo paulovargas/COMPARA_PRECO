@@ -185,3 +185,7 @@ Entre e use “Quero vender” para cadastrar a empresa. Após novo login, acomp
 A API e o frontend têm imagens próprias; `compose.producao.yml` isola banco/API e publica Nginx somente em loopback. Todos os containers mantêm inicialização manual (`restart: "no"`). O Compose de desenvolvimento continua separado, com seus dados preservados.
 
 A distribuição exige artefatos previamente validados. Configuração, execução local, bootstrap administrativo, proxy HTTPS, atualização, backup e restauração estão no [guia operacional](docs/IMPLANTACAO.md). Scripts: `scripts/backup.ps1`, `scripts/restaurar.ps1` e `scripts/validar-homologacao.mjs` (somente banco isolado, pois cria dados).
+
+## CI/CD
+
+GitHub Actions valida altera??es e publica no GHCR as imagens aprovadas da main, com tags por SHA. O deploy ? manual, protegido pelo Environment `producao`, com backup e healthchecks. Setup e pend?ncias em [docs/CI_CD.md](docs/CI_CD.md).

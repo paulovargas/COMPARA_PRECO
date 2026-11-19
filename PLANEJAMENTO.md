@@ -373,3 +373,21 @@ Preparação local concluída. Próximo passo: publicação externa após defini
 - Backup/restore executados de verdade em homologação: banco original e novo restaurado com 5 contas, 2 ofertas e 1 elegível. Backup existente recusado; scripts não apagam/sobrescrevem banco ativo. Nenhum volume ou dado do ambiente original removido.
 - Documentação de configuração, TLS externo, atualização/reversão, backup/restauração e roteiro integrado em docs/IMPLANTACAO.md; critérios/evidências em docs/VALIDACAO_FINAL.md. README atualizado, incluindo correção da antiga próxima etapa.
 - Alteração de logout registrada em 440ee06. Infraestrutura e documentação fecham a etapa local; publicação externa continua pendente de servidor/domínio, conforme resposta explícita de Paulo. Nenhum push, registry, DNS ou servidor externo utilizado.
+
+## Evolução CI/CD — 19/11/2026
+
+- Escolha de Paulo: CI automático, imagens no GHCR automaticamente após validação da main e deploy manual. Repositório remoto já configurado: paulovargas/COMPARA_PRECO.
+- Ampliar workflow existente com artefatos dos builds validados, publicação dependente de ambos os jobs, tags por SHA completo e permissões de pacote somente no job de publicação. Pull requests não publicam nem acessam credenciais de deploy.
+- Criar workflow manual de deploy para SHA publicado, restrito à main e Environment producao. SSH com host key previamente cadastrada, parâmetros validados e credenciais via Secrets/Variables. Nenhum deploy é disparado nesta entrega; servidor ainda não definido.
+- Usar Compose de registry sem build no servidor, imagens da mesma versão para API/web, bootstrap/segredos mantidos no host, backup prévio obrigatório e healthchecks. Preservar volume e restart=no. Não fazer rollback automático de schema.
+- Validar workflows com actionlint, shell do deploy e composição de registry localmente. Reutilizar os testes/builds já aprovados; executar verificações adicionais quando exigidas pelas alterações. Documentar setup, permissões, proteção da main, publicação, deploy e recuperação.
+- Commit previsto: ci: configura publicacao no GHCR e deploy manual. Sem push, alteração de Secrets/Settings ou execução remota automática nesta sessão.
+
+## Validação da evolução CI/CD — 19/11/2026
+
+- CI existente ampliado com artefatos das imagens realmente construídas após Maven/frontend. Publicação automática apenas na main após ambos aprovados, usando GITHUB_TOKEN com packages:write somente no job de publicação. Nomes GHCR em minúsculas, tags SHA completo e labels de origem/revisão, sem latest.
+- Deploy manual preparado, restrito à main e Environment producao. SSH usa chave temporária, known_hosts validado e parâmetros conferidos; não há coleta automática de host key. Overlay de registry remove build, mantém volume/projeto e restart=no.
+- Script remoto serializa com flock, baixa/confere revisão das imagens, produz backup prévio com permissões restritas, aguarda healthchecks e verifica proxy/API antes de registrar current-release. Falhas não disparam downgrade automático de schema; recuperação documentada.
+- Actions atuais consultadas nas releases oficiais, resolução dos SHAs conferida e inputs/runtime Node24 verificados nos manifests oficiais. Workflows aprovados por actionlint 1.7.11 com ShellCheck; script aprovado por bash -n e ShellCheck. Casos negativos recusaram SHA inválido, diretório raiz e ambiente ausente antes de qualquer deploy.
+- Compose de registry resolvido localmente: api/web sem build, todas as políticas restart=no preservadas. Dry-run sobre homologação indicou serviços saudáveis sem modificar containers. Nenhuma alteração de código da aplicação; não repetidos os 138 testes backend/94 frontend já aprovados na etapa anterior.
+- README e docs/CI_CD.md atualizados com setup de Actions, GHCR, proteção de main, Environment, Secrets/Variables e operação/recuperação. Commit local preparado; sem push, publicação de pacote, mudança de Settings/Secrets ou conexão SSH nesta entrega. Execução remota ainda depende de envio do commit e configuração do servidor.
