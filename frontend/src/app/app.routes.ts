@@ -40,6 +40,13 @@ export const routes: Routes = [
       import('./fornecedor/fornecedor-shell.component').then((m) => m.FornecedorShellComponent),
     children: [
       {
+        path: 'importacao',
+        data: { exigeFornecedor: true },
+        loadComponent: () =>
+          import('./fornecedor/importacao.component').then((m) => m.ImportacaoComponent),
+        title: 'Importar ofertas | Compara Preço',
+      },
+      {
         path: '',
         loadComponent: () =>
           import('./fornecedor/empresa.component').then((m) => m.EmpresaComponent),

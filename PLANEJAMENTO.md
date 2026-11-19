@@ -55,7 +55,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | 6 | Interface pública responsiva com categorias, busca, filtros e comparação conectadas à API; estados de carregamento, vazio e erro | `feat: cria experiencia de busca e comparacao` | Concluída |
 | 7 | Autenticação na interface, favoritos, fornecedores seguidos e WhatsApp; persistência por usuário | `feat: adiciona conta favoritos e contato` | Concluída |
 | 8 | Painel do fornecedor para empresa, catálogo, preços, estoque e disponibilidade | `feat: cria painel do fornecedor` | Concluída |
-| 9 | CSV/XLSX com modelo de arquivo, limites, validação, prévia e confirmação; testes de arquivos inválidos e duplicidades | `feat: adiciona importacao de ofertas` | Pendente |
+| 9 | CSV/XLSX com modelo de arquivo, limites, validação, prévia e confirmação; testes de arquivos inválidos e duplicidades | `feat: adiciona importacao de ofertas` | Concluída |
 | 10 | Painel administrativo com cadastros, moderação, bloqueio, permissões, estatísticas, relatórios e configurações | `feat: cria painel administrativo` | Pendente |
 | 11 | Fluxos integrados validados, documentação completa, configuração de produção, backup e roteiro de publicação | `docs: documenta validacao e publicacao` e correções específicas | Pendente |
 
@@ -88,7 +88,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 9: implementar importação CSV/XLSX com modelo de arquivo, limites, validação e prévia por linha, confirmação antes de persistir e regras explícitas para duplicidades/reimportação. A análise administrativa das solicitações de catálogo permanece na etapa 10.
+Etapa 10: implementar painel administrativo com catálogo completo, moderação, usuários/permissões, estatísticas e configurações. Incluir análise das solicitações de catálogo, com vinculação de variante e resposta ao fornecedor. Detalhar métricas e critérios de aceite antes de implementar.
 
 ## Registro da etapa 1 — 17/11/2026
 
@@ -294,3 +294,25 @@ Etapa 9: implementar importação CSV/XLSX com modelo de arquivo, limites, valid
 - Revisão no Edge contra API/banco reais, sem interceptação: busca com 6 variantes; comparação com 3 fornecedores e 2 empates; filtro SP; login de comprador e fornecedores aprovado/pendente/bloqueado; favoritos mantidos após recarga; painel Paulista com 6 ofertas e perfil bloqueado sem edição. Nenhum dado comercial foi alterado durante a revisão.
 - Capturas de desktop/celular inspecionadas; PostgreSQL saudável, `restart=no` preservado. API permanece executando com perfil demo e interface disponível em http://127.0.0.1:4200.
 - Emails/telefones são fictícios; credenciais e roteiro estão em `docs/DADOS_DEMONSTRACAO.md`. README e guias corrigidos para refletir a carga completa. Frontend não foi alterado; seus 69 testes passaram na etapa anterior. Nenhum push ou publicação realizado.
+
+## Execução da etapa 9 — 19/11/2026
+
+- Importar CSV UTF-8 separado por ponto e vírgula e XLSX com uma planilha. Modelo com colunas `varianteId;preco;estoque;disponivel`, identificação explícita da variante, preço decimal sem milhares, estoque inteiro e disponibilidade true/false.
+- Limitar arquivos a 2 MB e 500 linhas; recusar fórmulas, formatos diferentes e cabeçalhos incorretos. Validar cada linha, variante completa, duplicidade no arquivo e limites já usados nas ofertas.
+- Persistir prévia própria por 30 minutos, com ações CRIAR/ATUALIZAR/IGNORAR e erros por linha. Confirmar apenas lote integralmente válido, com aprovação atual da empresa e versões revalidadas. Bloquear empresa antes das ofertas; aplicar tudo em uma transação. Confirmação repetida retorna resultado aplicado, sem duplicar gravações.
+- Reimportação mantém valores iguais sem alterar versão; atualizações preservam moderação; novas ofertas ficam pendentes. Conflitos exigem nova prévia. Não identificar variante por aproximação textual.
+- Criar tela privada com modelos CSV/XLSX, seleção do arquivo, prévia, erros e confirmação explícita. Mostrar código para importação no catálogo. Preservar exemplos do banco local.
+- Validar parser e transações em PostgreSQL descartável, autorização/CSRF/isolamento/conflitos/idempotência e interface Angular. Executar verify, formatação, testes e build; documentar formato e registrar commit local coerente.
+
+## Validação da etapa 9 — 19/11/2026
+
+- Importação CSV UTF-8/semicolon e XLSX, modelos autenticados, códigos explícitos no catálogo e tela privada com upload, prévia persistida, erros por linha, confirmação e resultado. Links permitem restaurar a prévia após recarga.
+- Limites de 2 MB, 500 ofertas, quatro colunas e 256 caracteres por campo. XLSX exige uma planilha, sem fórmulas/macros/vínculos externos; estrutura descompactada limitada a 16 MB/1.000 entradas, mantendo proteções do POI. CSV exige uma linha por oferta.
+- Migração V7 guarda prévias por empresa. Aprovação atual, isolamento por proprietário, até 10 pendentes e validade de 30 minutos. Limpeza de registros vencidos ao preparar novo arquivo; resultados não constituem histórico permanente.
+- Lote integralmente válido é aplicado em transação, com empresa bloqueada antes de ofertas e revalidação de identidade/versão/completude. Duplicatas são inválidas, novos registros ficam pendentes, atualizações preservam moderação e valores iguais não alteram versão/data. Repetição da confirmação disponível retorna o resultado sem duplicar.
+- Backend: `mvnw.cmd -B -o verify` passou com 125 testes, zero falhas/erros/ignorados. Onze cenários novos verificam criação somente ao confirmar, CSV/XLSX, fórmulas, formatos/cabeçalho/limites, duplicatas, valores, moderação, reimportação, rollback integral, conflitos, isolamento, sessão/CSRF, bloqueio, expiração e confirmação simultânea. Testes usam PostgreSQL descartável.
+- Frontend: `npm.cmd run format:check`, `npm.cmd test -- --watch=false` e `npm.cmd run build` passaram. São 77 testes, oito novos para FormData/CSRF, confirmação separada, bloqueio de duplo envio, erros por linha, conflito/nova prévia, falha de conexão, formatos/tamanho, situação da empresa e restauração pela URL.
+- Edge em desktop 1440×1000 e celular 390×844: upload, erros, confirmação explícita, conflito, nova prévia, conclusão/recarga, código da variante, bloqueio e expiração revisados. Capturas inspecionadas e nenhuma rolagem horizontal. Mutações dessa revisão foram simuladas nas respostas HTTP do navegador.
+- API iniciada com perfil demo, V7 aplicada e saúde UP. Conta demo Paulista validada na interface contra API real: login, acesso à importação, modelos CSV/XLSX e códigos no catálogo. Somente consultas/login/logout; nenhuma importação/oferta local criada. Contagens preservadas: 6 usuários, 5 empresas, 20 ofertas e 14 elegíveis; zero prévias locais.
+- Docker Desktop estava desligado e foi iniciado para os testes; banco do projeto iniciado manualmente, saudável e com `restart=no`. Frontend disponível em http://localhost:4200 e API em http://localhost:8080.
+- Guia `docs/IMPORTACAO_DE_OFERTAS.md`, README, painel e planejamento atualizados. Dependências fixas Apache POI 6.0.0 e Commons CSV 1.14.1, conferidas nas fontes oficiais. Nenhum push, publicação ou pipeline remoto executado.

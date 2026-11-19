@@ -33,6 +33,9 @@
           {{ variante.marca }} · {{ variante.modelo }} · {{ variante.categoria }}
         </p>
         <app-caracteristicas [variante]="variante" />
+        <p class="codigo-importacao">
+          Código para importação: <code>{{ variante.id }}</code>
+        </p>
         @if (!variante.completa) {
           <p class="aviso">
             Esta variante ainda não tem todas as características obrigatórias. Solicite a revisão do

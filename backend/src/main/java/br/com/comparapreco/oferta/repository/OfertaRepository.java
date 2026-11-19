@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 public interface OfertaRepository extends JpaRepository<Oferta, UUID> {
+    Optional<Oferta> findByFornecedorIdAndVarianteId(UUID fornecedorId, UUID varianteId);
     boolean existsByFornecedorIdAndVarianteId(UUID fornecedorId, UUID varianteId);
     @EntityGraph(attributePaths = {"fornecedor", "variante.produto.marca", "variante.produto.categoria"})
     Page<Oferta> findByFornecedorUsuarioId(UUID usuarioId, Pageable pageable);

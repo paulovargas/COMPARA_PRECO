@@ -29,6 +29,9 @@ import { FornecedorContext } from './fornecedor.context';
           ariaCurrentWhenActive="page"
           >Solicitações</a
         >
+        <a routerLink="/fornecedor/importacao" routerLinkActive="ativa" ariaCurrentWhenActive="page"
+          >Importar ofertas</a
+        >
       </nav>
       @if (contexto.carregando()) {
         <p role="status">Carregando dados da empresa…</p>

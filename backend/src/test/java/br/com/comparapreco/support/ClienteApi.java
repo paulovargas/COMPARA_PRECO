@@ -46,6 +46,18 @@ public class ClienteApi implements AutoCloseable {
         request.method(method, body == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)));
         return http.send(request.build(), HttpResponse.BodyHandlers.ofString());
     }
+    public HttpResponse<String> arquivo(String path, String nome, byte[] bytes, boolean csrf) throws Exception {
+        String boundary = "ComparaPrecoTeste";
+        var out = new java.io.ByteArrayOutputStream();
+        out.write(("--" + boundary + "\r\nContent-Disposition: form-data; name=\"arquivo\"; filename=\"" + nome
+                + "\"\r\nContent-Type: application/octet-stream\r\n\r\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        out.write(bytes);
+        out.write(("\r\n--" + boundary + "--\r\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).timeout(Duration.ofSeconds(30))
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary);
+        if (csrf) { request.header(cabecalho, token); }
+        return http.send(request.POST(HttpRequest.BodyPublishers.ofByteArray(out.toByteArray())).build(), HttpResponse.BodyHandlers.ofString());
+    }
     public JsonNode json(HttpResponse<String> response) { return mapper.readTree(response.body()); }
     @Override public void close() { http.close(); }
 }

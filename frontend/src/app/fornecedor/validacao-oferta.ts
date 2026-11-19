@@ -11,6 +11,18 @@ export function mensagemOperacao(erro: HttpErrorResponse): string {
   if (erro.status === 401) return 'Sua sessão expirou. Entre novamente para continuar.';
   if (erro.status === 403)
     return 'Esta conta ou empresa não pode realizar alterações. Atualize a situação da empresa.';
+  if (
+    [
+      'ARQUIVO_INVALIDO',
+      'IMPORTACAO_DESATUALIZADA',
+      'IMPORTACAO_INVALIDA',
+      'IMPORTACAO_EXPIRADA',
+      'LIMITE_IMPORTACOES',
+    ].includes(erro.error?.codigo) &&
+    typeof erro.error?.mensagem === 'string'
+  )
+    return erro.error.mensagem;
+  if (erro.status === 413) return 'O arquivo excedeu o limite de 2 MB.';
   const mensagens: Record<string, string> = {
     REGISTRO_DESATUALIZADO:
       'Os dados foram alterados em outra sessão. Sua edição foi mantida; descarte e recarregue os dados antes de tentar novamente.',

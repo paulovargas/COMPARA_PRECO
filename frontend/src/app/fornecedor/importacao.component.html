@@ -1,0 +1,97 @@
+<h2>Importar ofertas</h2>
+<p class="descricao">
+  Preencha até 500 ofertas por arquivo, com tamanho máximo de 2 MB. Revise a prévia antes de
+  confirmar.
+</p>
+<p>
+  <a href="/api/fornecedor/importacoes/modelo/csv" download="ofertas.csv">Baixar modelo CSV</a> ·
+  <a href="/api/fornecedor/importacoes/modelo/xlsx" download="ofertas.xlsx">Baixar modelo XLSX</a>
+</p>
+<p>
+  Use o <a routerLink="/fornecedor/catalogo">código da variante no catálogo</a>. CSV deve ser UTF-8,
+  separado por ponto e vírgula. Preço sem milhares, com vírgula ou ponto decimal; estoque inteiro;
+  disponibilidade <code>true</code> ou <code>false</code>. Não use fórmulas.
+</p>
+<p>
+  Ofertas existentes serão atualizadas mantendo a moderação. Novas ofertas ficam pendentes. Valores
+  iguais serão ignorados. Variantes repetidas no arquivo impedem a confirmação.
+</p>
+<label for="arquivo-ofertas">Arquivo CSV ou XLSX</label>
+<input
+  id="arquivo-ofertas"
+  type="file"
+  accept=".csv,.xlsx"
+  [disabled]="ocupado() || !contexto.aprovado()"
+  (change)="selecionar($event)"
+/>
+<button
+  class="botao"
+  [disabled]="!arquivo() || ocupado() || !contexto.aprovado()"
+  (click)="preparar()"
+>
+  Gerar nova prévia
+</button>
+@if (ocupado()) {
+  <p role="status">Processando importação…</p>
+}
+@if (erro()) {
+  <p class="aviso" role="alert">{{ erro() }}</p>
+}
+@if (previa(); as dados) {
+  <section aria-labelledby="titulo-previa">
+    <h3 id="titulo-previa">
+      {{ dados.situacao === 'APLICADA' ? 'Importação concluída' : 'Prévia da importação' }}
+    </h3>
+    <p role="status">
+      {{ dados.criar }} novas · {{ dados.atualizar }} atualizações · {{ dados.ignorar }} sem
+      alteração · {{ dados.invalidas }} linhas inválidas
+    </p>
+    @if (dados.situacao === 'APLICADA') {
+      <p>O lote foi aplicado. <a routerLink="/fornecedor/ofertas">Ver minhas ofertas</a></p>
+    } @else {
+      <p>
+        A prévia expira em {{ dados.expiraEm | date: 'dd/MM/yyyy HH:mm' }}. Confirme somente após
+        revisar todas as linhas.
+      </p>
+      @if (dados.invalidas) {
+        <p class="aviso">Nenhuma oferta foi alterada. Corrija o arquivo e gere uma nova prévia.</p>
+      }
+      <button
+        class="botao principal"
+        [disabled]="!!dados.invalidas || ocupado() || bloqueada() || !contexto.aprovado()"
+        (click)="confirmar()"
+      >
+        Confirmar importação de {{ dados.linhas.length }} ofertas
+      </button>
+    }
+    <div class="lista-painel">
+      @for (linha of dados.linhas; track linha.numero) {
+        <article class="cartao">
+          <h4>
+            Linha {{ linha.numero }} ·
+            {{
+              linha.acao === 'CRIAR'
+                ? 'Criar oferta'
+                : linha.acao === 'ATUALIZAR'
+                  ? 'Atualizar oferta'
+                  : linha.acao === 'IGNORAR'
+                    ? 'Sem alteração'
+                    : 'Corrigir'
+            }}
+          </h4>
+          @if (linha.variante; as variante) {
+            <strong>{{ variante.nomeProduto }}</strong><app-caracteristicas [variante]="variante" />
+          }
+          <p class="codigo-importacao">Código: {{ linha.varianteId }}</p>
+          <p>
+            Preço: {{ linha.preco }} · Estoque: {{ linha.estoque }} · Disponível:
+            {{ linha.disponivel }}
+          </p>
+          @for (erroLinha of linha.erros; track erroLinha) {
+            <p class="aviso">{{ erroLinha }}</p>
+          }
+        </article>
+      }
+    </div>
+  </section>
+}

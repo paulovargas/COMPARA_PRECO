@@ -86,3 +86,7 @@ npm.cmd run build
 ```
 
 Os testes do backend usam PostgreSQL descartável e cobrem o CRUD já existente, autorização e solicitações, inclusive concorrência. Os testes Angular cobrem perfis, cadastro/novo login, estado da empresa, moeda/estoque, conflito, exclusão confirmada, catálogo e solicitações. Revisão no Edge em 1440×1000 e 390×844 usa respostas simuladas para os cenários preenchidos, sem criar empresas/ofertas no banco local.
+
+## Importação em lote
+
+O painel também permite importar CSV/XLSX com prévia e confirmação. No catálogo, copie o código da variante. Veja o [formato, limites e tratamento de conflitos](IMPORTACAO_DE_OFERTAS.md).

@@ -1,3 +1,4 @@
+import { Importacao } from './importacao.models';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -14,6 +15,20 @@ import {
 @Injectable({ providedIn: 'root' })
 export class FornecedorService {
   private readonly http = inject(HttpClient);
+  prepararImportacao(arquivo: File): Observable<Importacao> {
+    const dados = new FormData();
+    dados.append('arquivo', arquivo);
+    return this.http.post<Importacao>('/api/fornecedor/importacoes', dados);
+  }
+  importacao(id: string): Observable<Importacao> {
+    return this.http.get<Importacao>(`/api/fornecedor/importacoes/${encodeURIComponent(id)}`);
+  }
+  confirmarImportacao(id: string): Observable<Importacao> {
+    return this.http.post<Importacao>(
+      `/api/fornecedor/importacoes/${encodeURIComponent(id)}/confirmacao`,
+      {},
+    );
+  }
   perfil(): Observable<Empresa> {
     return this.http.get<Empresa>('/api/fornecedor/perfil');
   }
