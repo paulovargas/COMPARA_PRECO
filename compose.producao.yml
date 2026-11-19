@@ -1,0 +1,67 @@
+name: compara-preco-producao
+
+services:
+  postgres:
+    image: postgres:17.7-alpine
+    environment:
+      POSTGRES_DB: ${PROD_DB_NAME:-compara_preco}
+      POSTGRES_USER: compara_preco
+      POSTGRES_PASSWORD: ${PROD_DB_PASSWORD:?Defina PROD_DB_PASSWORD}
+    volumes:
+      - dados-producao:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U compara_preco -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: "no"
+    logging: &logs
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  api:
+    image: compara-preco-api:${APP_VERSION:-local}
+    build: ./backend
+    environment:
+      SPRING_PROFILES_ACTIVE: producao
+      DB_URL: jdbc:postgresql://postgres:5432/${PROD_DB_NAME:-compara_preco}
+      DB_USERNAME: compara_preco
+      DB_PASSWORD: ${PROD_DB_PASSWORD:?Defina PROD_DB_PASSWORD}
+      APP_ADMIN_HABILITADO: ${PROD_ADMIN_HABILITADO:-false}
+      APP_ADMIN_NOME: ${PROD_ADMIN_NOME:-Administrador}
+      APP_ADMIN_EMAIL: ${PROD_ADMIN_EMAIL:-}
+      APP_ADMIN_SENHA: ${PROD_ADMIN_SENHA:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    mem_limit: 1g
+    restart: "no"
+    logging: *logs
+
+  web:
+    image: compara-preco-web:${APP_VERSION:-local}
+    build: ./frontend
+    ports:
+      - "127.0.0.1:${PROD_WEB_PORT:-8088}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    restart: "no"
+    logging: *logs
+
+volumes:
+  dados-producao:

@@ -1,0 +1,8 @@
+**
+!Dockerfile
+!docker/
+!docker/nginx.conf
+!dist/
+!dist/compara-preco-web/
+!dist/compara-preco-web/browser/
+!dist/compara-preco-web/browser/**

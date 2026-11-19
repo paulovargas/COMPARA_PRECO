@@ -6,7 +6,7 @@ Plataforma para buscar produtos, comparar ofertas equivalentes e entrar em conta
 
 API com catálogo, autenticação, permissões, fornecedores, moderação, ofertas e busca pública. A interface Angular permite buscar produtos, aplicar filtros, paginar resultados e comparar ofertas equivalentes, com destaque para todos os empates no menor preço. As telas são responsivas e conectadas à API, com cadastro/login/logout, produtos favoritos, fornecedores seguidos e contato WhatsApp. O painel do fornecedor permite cadastrar a empresa, consultar variantes, gerenciar ofertas e solicitar inclusões no catálogo. A importação CSV/XLSX inclui modelos, prévia, erros por linha e confirmação integral. O painel administrativo inclui usuários/perfis, moderação, CRUD de catálogo, análise de solicitações, indicadores, relatório por estado e configuração do contato.
 
-Abra [http://127.0.0.1:4200](http://127.0.0.1:4200) após iniciar os serviços abaixo. A busca mostra apenas ofertas publicadas e elegíveis; um banco sem ofertas retorna o estado vazio, sem produtos fictícios. Veja o [guia da interface](docs/INTERFACE_PUBLICA.md).
+Abra [http://localhost:4200](http://localhost:4200) após iniciar os serviços abaixo. A busca mostra apenas ofertas publicadas e elegíveis; um banco sem ofertas retorna o estado vazio, sem produtos fictícios. Veja o [guia da interface](docs/INTERFACE_PUBLICA.md).
 
 Veja também os guias de [importação de ofertas](docs/IMPORTACAO_DE_OFERTAS.md) e [administração](docs/ADMINISTRACAO.md).
 
@@ -142,7 +142,7 @@ npm.cmd run format:check
 npm.cmd run build
 ```
 
-O frontend possui testes de busca, conta e painel do fornecedor. Execute `npm.cmd test -- --watch=false`. O pipeline executa os testes do backend com PostgreSQL isolado via Testcontainers e verifica formatação, testes e build do frontend. O pipeline será executado no GitHub quando houver um remoto configurado e os commits forem enviados.
+O frontend possui testes de busca, conta, painel do fornecedor, importação e administração. Execute `npm.cmd test -- --watch=false`. O pipeline executa os testes do backend com PostgreSQL isolado via Testcontainers e verifica formatação, testes e build do frontend. O pipeline será executado no GitHub quando houver um remoto configurado e os commits forem enviados.
 
 ## Dados de demonstração
 
@@ -166,7 +166,7 @@ docker compose stop
 
 ## Próxima entrega
 
-Implementar busca pública, filtros, paginação e comparação de preços, conforme etapa 5 do planejamento. Publicação em servidor ainda depende da definição do destino e dos acessos.
+A preparação local e a validação integrada estão concluídas. Publicação externa aguarda servidor, domínio, TLS e acessos. Veja o [guia de implantação](docs/IMPLANTACAO.md) e a [validação final](docs/VALIDACAO_FINAL.md).
 
 ## Busca e comparação pública
 
@@ -179,3 +179,9 @@ Cadastre-se e entre pela interface para salvar produtos e seguir fornecedores em
 ## Painel do fornecedor
 
 Entre e use “Quero vender” para cadastrar a empresa. Após novo login, acompanhe a aprovação e gerencie seu catálogo de ofertas pelo “Painel do fornecedor”. Fluxo e contratos em [docs/PAINEL_DO_FORNECEDOR.md](docs/PAINEL_DO_FORNECEDOR.md).
+
+## Distribuição Docker e operação
+
+A API e o frontend têm imagens próprias; `compose.producao.yml` isola banco/API e publica Nginx somente em loopback. Todos os containers mantêm inicialização manual (`restart: "no"`). O Compose de desenvolvimento continua separado, com seus dados preservados.
+
+A distribuição exige artefatos previamente validados. Configuração, execução local, bootstrap administrativo, proxy HTTPS, atualização, backup e restauração estão no [guia operacional](docs/IMPLANTACAO.md). Scripts: `scripts/backup.ps1`, `scripts/restaurar.ps1` e `scripts/validar-homologacao.mjs` (somente banco isolado, pois cria dados).

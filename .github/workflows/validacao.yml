@@ -21,6 +21,7 @@ jobs:
           java-version: '25'
           cache: maven
       - run: sh mvnw -B verify
+      - run: docker build -t compara-preco-api:ci .
 
   frontend:
     runs-on: ubuntu-latest
@@ -38,3 +39,4 @@ jobs:
       - run: npm run format:check
       - run: npm test -- --watch=false
       - run: npm run build
+      - run: docker build -t compara-preco-web:ci .

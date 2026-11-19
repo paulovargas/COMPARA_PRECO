@@ -57,7 +57,7 @@ Cada etapa termina com validação e atualização deste plano. Os commits devem
 | 8 | Painel do fornecedor para empresa, catálogo, preços, estoque e disponibilidade | `feat: cria painel do fornecedor` | Concluída |
 | 9 | CSV/XLSX com modelo de arquivo, limites, validação, prévia e confirmação; testes de arquivos inválidos e duplicidades | `feat: adiciona importacao de ofertas` | Concluída |
 | 10 | Painel administrativo com cadastros, moderação, bloqueio, permissões, estatísticas, relatórios e configurações | `feat: cria painel administrativo` | Concluída |
-| 11 | Fluxos integrados validados, documentação completa, configuração de produção, backup e roteiro de publicação | `docs: documenta validacao e publicacao` e correções específicas | Pendente |
+| 11 | Fluxos integrados validados, documentação completa, configuração de produção, backup e roteiro de publicação | `docs: documenta validacao e publicacao` e correções específicas | Concluída localmente; publicação externa pendente |
 
 Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofertas sustentam comparação; o fluxo de comparação deve funcionar antes dos painéis completos. Importação depende das regras de variante e oferta já testadas.
 
@@ -88,7 +88,7 @@ Dependências: catálogo e autorização sustentam fornecedores e ofertas; ofert
 
 ## Próxima entrega
 
-Etapa 11: validar os fluxos integrados, revisar critérios de aceite e pendências de produção, preparar execução/deploy e documentação operacional. Definir servidor/domínio/credenciais antes de publicar; enquanto isso, preparar e verificar os artefatos locais.
+Preparação local concluída. Próximo passo: publicação externa após definição de servidor, domínio, TLS e acessos. Paulo confirmou nesta etapa que ainda não tem destino definido e solicitou preparar localmente; nenhuma publicação externa foi autorizada ou realizada.
 
 ## Registro da etapa 1 — 17/11/2026
 
@@ -364,3 +364,12 @@ Etapa 11: validar os fluxos integrados, revisar critérios de aceite e pendênci
 - `mvnw.cmd -B -o verify`: BUILD SUCCESS, 138 testes, zero falhas/erros/ignorados. Frontend: formatação, 94 testes e build passaram, sem avisos de orçamento.
 - Roteiro HTTP integrado executado contra distribuição Docker em banco próprio: cadastro e novo login após cadastro da empresa, aprovação, catálogo/variante, oferta/moderação, comparação, favoritos/seguidos, contato, importação sem gravação antes da confirmação, confirmação repetida idempotente, solicitação atendida, bloqueio retirando oferta/contato e reaprovação recuperando publicação. Nenhum WhatsApp aberto ou mensagem enviada.
 - Banco de desenvolvimento preservado: 7 contas (incluindo admin local), 5 empresas, 20 ofertas e 14 elegíveis. Homologação usa projeto/volume independentes, sem carga demo.
+
+## Validação da implantação local — 19/11/2026
+
+- Dockerfiles com contextos restritos, API Java 25 e Nginx sem root, filesystem somente leitura e healthchecks. Imagens oficiais com versões fixas, conferidas no registry. Compose de produção independente, volume próprio, banco/API internos e Nginx somente em loopback; restart=no em todos os serviços.
+- Perfil producao sem documentação Swagger/OpenAPI pública, sem seed demo e com cookies Secure. Pipeline preparado para construir as imagens após testes/build, sem publicação de imagens.
+- Distribuição validada em localhost:8088, incluindo roteiro HTTP integrado, Edge desktop/celular e recarga de rotas profundas. Cookies Secure/HttpOnly/Lax, headers, health e bloqueio de endpoints internos conferidos. Bootstrap inicial removido do ambiente após criação do admin; reinício e login revalidados.
+- Backup/restore executados de verdade em homologação: banco original e novo restaurado com 5 contas, 2 ofertas e 1 elegível. Backup existente recusado; scripts não apagam/sobrescrevem banco ativo. Nenhum volume ou dado do ambiente original removido.
+- Documentação de configuração, TLS externo, atualização/reversão, backup/restauração e roteiro integrado em docs/IMPLANTACAO.md; critérios/evidências em docs/VALIDACAO_FINAL.md. README atualizado, incluindo correção da antiga próxima etapa.
+- Alteração de logout registrada em 440ee06. Infraestrutura e documentação fecham a etapa local; publicação externa continua pendente de servidor/domínio, conforme resposta explícita de Paulo. Nenhum push, registry, DNS ou servidor externo utilizado.
